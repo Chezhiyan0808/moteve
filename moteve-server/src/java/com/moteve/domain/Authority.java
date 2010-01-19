@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2010 the original author or authors.
+ * Copyright 2009-2010 Moteve.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ import javax.persistence.Table;
 @Table(name="authority")
 public class Authority {
 
-    public static final String MEMBER = "MEMBER";
-    public static final String ADMIN = "ADMIN";
+    public static final String MEMBER = "ROLE_MEMBER";
+    public static final String ADMIN = "ROLE_ADMIN";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

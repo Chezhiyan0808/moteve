@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2010 the original author or authors.
+ * Copyright 2009-2010 Moteve.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
 
 package com.moteve.dao;
 
+import com.moteve.domain.Authority;
 import com.moteve.domain.User;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +37,12 @@ public class UserDao {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
+    MessageDigestPasswordEncoder passwordEncoder;
+
     @Transactional
     public void store(User user) {
+        user.setPassword(passwordEncoder.encodePassword(user.getPassword(), null));
         entityManager.merge(user);
     }
 
@@ -62,5 +69,18 @@ public class UserDao {
         Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email");
         query.setParameter("email", email);
         return  (User) query.getSingleResult();
+    }
+
+    /**
+     *
+     * @return all users that have the <code>Authority.ADMIN</code> security authority
+     */
+    @Transactional(readOnly=true)
+    @SuppressWarnings("unchecked")
+    public List<User> findAdmins() {
+        Query query = entityManager.createQuery("SELECT u FROM User u JOIN u.authorities a " +
+                "WHERE a.name = :admin_auth");
+        query.setParameter("admin_auth", Authority.ADMIN);
+        return query.getResultList();
     }
 }

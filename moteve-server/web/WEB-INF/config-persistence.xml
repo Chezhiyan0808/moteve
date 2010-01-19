@@ -44,5 +44,10 @@
     <bean id="transactionManager"
           class="org.springframework.orm.jpa.JpaTransactionManager"
           p:entityManagerFactory-ref="entityManagerFactory" />
-    
+
+    <bean id="passwordEncoder"
+          class="org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder">
+        <constructor-arg value="MD5" />
+    </bean>
+
 </beans>
