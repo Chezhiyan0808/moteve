@@ -50,14 +50,14 @@ public class User extends Role {
      */
     @ManyToMany
     @JoinTable(
-        name="user_contacts",
+        name="user_contact",
         joinColumns=@JoinColumn(name="user_id", referencedColumnName="id"),
         inverseJoinColumns=@JoinColumn(name="contact_id", referencedColumnName="id"))
     Set<User> contacts;
 
     @OneToMany
     @JoinTable(
-        name="user_groups",
+        name="user_group",
         joinColumns=@JoinColumn(name="user_id", referencedColumnName="id"),
         inverseJoinColumns=@JoinColumn(name="group_id", referencedColumnName="id"))
     Set<Group> groups;
@@ -69,9 +69,9 @@ public class User extends Role {
     @Column(name="enabled", nullable=false)
     boolean enabled;
 
-    @OneToMany
+    @ManyToMany
     @JoinTable(
-        name="user_authorities",
+        name="user_authority",
         joinColumns=@JoinColumn(name="user_id", referencedColumnName="id"),
         inverseJoinColumns=@JoinColumn(name="authority_id", referencedColumnName="id"))
     Set<Authority> authorities;

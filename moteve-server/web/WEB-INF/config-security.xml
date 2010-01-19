@@ -26,9 +26,9 @@
                                WHERE email = ?"
                                authorities-by-username-query=
                                "SELECT u.email AS username, a.name AS authorities
-                               FROM mt_user u, authority a, user_authorities
+                               FROM mt_user u, authority a, user_authority
                                WHERE u.email = ?
-                               AND u.id = user_authorities.user_id AND user_authorities.authority_id = a.id" />
+                               AND u.id = user_authority.user_id AND user_authority.authority_id = a.id" />
             <!--<user-service>
                 <user name="admin" password="secret" authorities="ROLE_ADMIN,ROLE_USER" />
                 <user name="user1" password="1111" authorities="ROLE_USER" />

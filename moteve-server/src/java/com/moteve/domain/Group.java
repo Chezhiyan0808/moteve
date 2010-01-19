@@ -38,7 +38,7 @@ public class Group extends Role {
 
     @ManyToMany
     @JoinTable(
-        name="group_members",
+        name="group_member",
         joinColumns=@JoinColumn(name="group_id", referencedColumnName="id"),
         inverseJoinColumns=@JoinColumn(name="member_id", referencedColumnName="id"))
     private Set<Role> members;

@@ -50,6 +50,7 @@ public class UserService {
     public void register(User user) {
         logger.info("Registering user " + user.getEmail());
         user.setRegistrationDate(new Date());
+        user.setEnabled(true);
         Authority memberAuthority = authorityDao.findByName(Authority.MEMBER);
         Set<Authority> authorities = new HashSet<Authority>();
         authorities.add(memberAuthority);
