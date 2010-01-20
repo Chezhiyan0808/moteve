@@ -22,6 +22,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
@@ -42,6 +43,9 @@ public class Group extends Role {
         joinColumns=@JoinColumn(name="group_id", referencedColumnName="id"),
         inverseJoinColumns=@JoinColumn(name="member_id", referencedColumnName="id"))
     private Set<Role> members;
+
+    @ManyToOne(optional=false)
+    private User user;
     
     public String getName() {
         return name;
@@ -59,4 +63,11 @@ public class Group extends Role {
         this.members = members;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

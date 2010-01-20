@@ -18,6 +18,7 @@ package com.moteve.domain;
 
 import java.util.Date;
 import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -55,11 +56,7 @@ public class User extends Role {
         inverseJoinColumns=@JoinColumn(name="contact_id", referencedColumnName="id"))
     Set<User> contacts;
 
-    @OneToMany
-    @JoinTable(
-        name="user_group",
-        joinColumns=@JoinColumn(name="user_id", referencedColumnName="id"),
-        inverseJoinColumns=@JoinColumn(name="group_id", referencedColumnName="id"))
+    @OneToMany(mappedBy="user")
     Set<Group> groups;
 
     @Column(name="registration_date", nullable=false)
