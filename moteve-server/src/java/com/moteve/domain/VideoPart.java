@@ -16,6 +16,7 @@
 
 package com.moteve.domain;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
 import javax.persistence.CascadeType;
@@ -35,7 +36,7 @@ import javax.persistence.Temporal;
  */
 @Entity
 @Table(name="video_part")
-public class VideoPart {
+public class VideoPart implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

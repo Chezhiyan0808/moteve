@@ -94,6 +94,10 @@
                     <file>${file.reference.org.springframework.jdbc-3.0.0.RELEASE.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
+                <library dirs="200">
+                    <file>${file.reference.spring-security-taglibs-3.0.1.RELEASE.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
             <source-roots>

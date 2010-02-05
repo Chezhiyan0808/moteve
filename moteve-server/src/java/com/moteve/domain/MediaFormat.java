@@ -15,6 +15,7 @@
  */
 package com.moteve.domain;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -29,7 +30,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "media_format")
-public class MediaFormat {
+public class MediaFormat implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -16,9 +16,9 @@
 
 package com.moteve.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -35,7 +35,7 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name="mt_user")
-public class User extends Role {
+public class User extends Role implements Serializable {
 
     @Column(name="email", unique = true, nullable=false)
     private String email; // also used as login name

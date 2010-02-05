@@ -16,6 +16,7 @@
 
 package com.moteve.domain;
 
+import java.io.Serializable;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,7 +33,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name="mt_group")
-public class Group extends Role {
+public class Group extends Role implements Serializable {
 
     @Column(name = "name", nullable=false) // not unique as many users can have the same name of their groups, which are globally different
     private String name;

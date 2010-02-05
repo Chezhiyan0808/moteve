@@ -29,13 +29,13 @@ import org.springframework.web.servlet.ModelAndView;
  * @author Radek Skokan
  */
 @Controller
-@RequestMapping(value="/welcome.htm")
+@RequestMapping(value="/index.htm")
 public class WelcomeController {
 
     @RequestMapping(method=RequestMethod.GET)
     public ModelAndView handleRequest(HttpServletRequest hsr, HttpServletResponse hsr1) throws Exception {
         Date today = new Date();
-        return new ModelAndView("welcome", "today", today);
+        return new ModelAndView("index", "today", today);
     }
 
 }

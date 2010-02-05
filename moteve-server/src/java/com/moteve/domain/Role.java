@@ -16,6 +16,7 @@
 
 package com.moteve.domain;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -38,7 +39,7 @@ import javax.persistence.Table;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name="mt_role")
 //@DiscriminatorColumn(name="role_type")
-public abstract class Role {
+public abstract class Role implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

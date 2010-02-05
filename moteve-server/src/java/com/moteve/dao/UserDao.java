@@ -83,4 +83,27 @@ public class UserDao {
         query.setParameter("admin_auth", Authority.ADMIN);
         return query.getResultList();
     }
+
+    @Transactional(readOnly=true)
+    public User findByEmailAndPassword(String email, String clearTextPassword) {
+        String encPassword = passwordEncoder.encodePassword(clearTextPassword, null);
+        Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email AND password = :password");
+        query.setParameter("email", email);
+        query.setParameter("password", encPassword);
+        return  (User) query.getSingleResult();
+    }
+
+    @Transactional(readOnly=true)
+    public List<User> findByEmailOrDisplayName(String criteria) {
+        Query query = entityManager.createQuery("SELECT u FROM User u WHERE UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria");
+        query.setParameter("criteria", "%" + criteria.toUpperCase() + "%");
+        return query.getResultList();
+    }
+
+    @Transactional(readOnly=true)
+    public List<User> findEnabledByEmailOrDisplayName(String criteria) {
+        Query query = entityManager.createQuery("SELECT u FROM User u WHERE (u.enabled = TRUE) AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria)");
+        query.setParameter("criteria", "%" + criteria.toUpperCase() + "%");
+        return query.getResultList();
+    }
 }

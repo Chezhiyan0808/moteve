@@ -16,6 +16,7 @@
 
 package com.moteve.domain;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -30,7 +31,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name="authority")
-public class Authority {
+public class Authority implements Serializable {
 
     public static final String MEMBER = "ROLE_MEMBER";
     public static final String ADMIN = "ROLE_ADMIN";

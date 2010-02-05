@@ -16,6 +16,7 @@
 
 package com.moteve.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 import javax.persistence.Column;
@@ -38,7 +39,7 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name="video")
-public class Video {
+public class Video implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -70,6 +71,12 @@ public class Video {
         joinColumns=@JoinColumn(name="video_id", referencedColumnName="id"),
         inverseJoinColumns=@JoinColumn(name="role_id", referencedColumnName="id"))
     private Set<Role> permissions;
+
+    /**
+     * A security token used for uploading video parts
+     */
+    @Column(name="token")
+    private String token;
 
     public User getAuthor() {
         return author;
@@ -133,6 +140,14 @@ public class Video {
 
     public void setRecordInProgress(boolean recordInProgress) {
         this.recordInProgress = recordInProgress;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
     
 }
