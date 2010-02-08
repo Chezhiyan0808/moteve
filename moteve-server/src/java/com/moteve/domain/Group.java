@@ -25,6 +25,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 /**
  * A group can contain users from the contact list and also another groups of the user (group CZ contains Prague and Pilsen). This is the reason for the Role.
@@ -32,7 +33,7 @@ import javax.persistence.Table;
  * @author Radek Skokan
  */
 @Entity
-@Table(name="mt_group")
+@Table(name="mt_group", uniqueConstraints=@UniqueConstraint(columnNames={"name", "user_id"}))
 public class Group extends Role implements Serializable {
 
     @Column(name = "name", nullable=false) // not unique as many users can have the same name of their groups, which are globally different

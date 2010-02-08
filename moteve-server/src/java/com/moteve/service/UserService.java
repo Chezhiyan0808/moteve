@@ -16,8 +16,10 @@
 package com.moteve.service;
 
 import com.moteve.dao.AuthorityDao;
+import com.moteve.dao.GroupDao;
 import com.moteve.dao.UserDao;
 import com.moteve.domain.Authority;
+import com.moteve.domain.Group;
 import com.moteve.domain.User;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,9 +29,7 @@ import java.util.Set;
 import javax.persistence.NoResultException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.View;
 
 /**
  *
@@ -39,12 +39,15 @@ import org.springframework.web.servlet.View;
 public class UserService {
 
     private static final Logger logger = Logger.getLogger(UserService.class);
+
     @Autowired
     private UserDao userDao;
+
     @Autowired
     private AuthorityDao authorityDao;
+
     @Autowired
-    MessageDigestPasswordEncoder passwordEncoder;
+    GroupDao groupDao;
 
     /**
      * Registers a new user into the system and grants him the MEMBER role.
@@ -104,21 +107,80 @@ public class UserService {
             return;
         }
 
-        User user = userDao.findByEmail(email);
-        // TODO: here we just want to add the already known contact IDs to that user. No need to SELECT all the contacts' details first.
-        for (Long contactId : contactIds) {
-            User contact = userDao.findById(contactId);
-            user.getContacts().add(contact);
-            logger.debug("Added contact " + contact.getEmail() + " to user " + user.getEmail());
+        try {
+            User user = userDao.findByEmail(email);
+            // TODO: here we just want to add the already known contact IDs to that user. No need to SELECT all the contacts' details first.
+            for (Long contactId : contactIds) {
+                User contact = userDao.findById(contactId);
+                user.getContacts().add(contact);
+                logger.debug("Added contact " + contact.getEmail() + " to user " + user.getEmail());
+            }
+            userDao.store(user);
+        } catch (NoResultException e) {
+            logger.info("Cannot find user " + email + " in DB");
         }
-        userDao.store(user);
     }
 
     public User findUserByEmail(String email) {
         try {
             return userDao.findByEmail(email);
         } catch (NoResultException e) {
+            logger.info("Cannot find user " + email + " in DB");
             return null;
+        }
+    }
+
+    /**
+     *
+     * @param email
+     * @return set of groups that the user idenfied by email has
+     */
+    public Set<Group> getGroups(String email) {
+        if (email == null) {
+            return new HashSet<Group>();
+        }
+
+        try {
+            return userDao.findByEmail(email).getGroups();
+        } catch (NoResultException e) {
+            logger.info("Cannot find user " + email + " in DB");
+            return new HashSet<Group>();
+        }
+    }
+
+    /**
+     * Creates a group groupName for the user identified by email.
+     * @param email
+     * @param groupName
+     */
+    public void createGroup(String email, String groupName) {
+        if (email == null) {
+            return;
+        }
+
+        try {
+            User user = userDao.findByEmail(email);
+            Group group = new Group();
+            group.setName(groupName);
+            group.setUser(user);
+            groupDao.store(group);
+        } catch (NoResultException e) {
+            logger.info("Cannot find user " + email + " in DB");
+        }
+    }
+
+    /**
+     * Removes groups associated to a user.
+     * @param email identifies the user
+     * @param groupsToRemove IDs of the groups to be removed
+     */
+    public void removeGroups(String email, List<Long> groupsToRemove) {
+        if (email == null || groupsToRemove == null || groupsToRemove.size() == 0) {
+            return;
+        }
+
+        for (Long groupId : groupsToRemove) {
+            groupDao.delete(groupId);
         }
     }
 }

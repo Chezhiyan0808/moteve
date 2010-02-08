@@ -10,7 +10,7 @@ Member can choose: Videos (watch, list, manage), Groups (add, remove, manage mem
 <div id="main_menu">
     <a href="<c:url value='/video/list.htm'/>">Videos</a>
     <security:authorize ifAnyGranted="ROLE_MEMBER,ROLE_ADMIN">
-        | <a href="<c:url value='/contact/groupList.htm'/>">Groups</a> | <a href="<c:url value='/contact/listContacts.htm'/>">Contacts</a> | ${loggedUser} | <a href="<c:url value='/logout.jsp'/>">Logout</a>
+        | <a href="<c:url value='/group/manageGroups.htm'/>">Groups</a> | <a href="<c:url value='/contact/listContacts.htm'/>">Contacts</a> | ${loggedUser} | <a href="<c:url value='/logout.jsp'/>">Logout</a>
     </security:authorize>
     <security:authorize ifAllGranted="ROLE_ANONYMOUS">
         | <a href="<c:url value='/login.htm'/>">Login</a> | <a href="<c:url value='/register.htm'/>">Register</a>

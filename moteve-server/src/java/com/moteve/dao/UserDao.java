@@ -94,6 +94,7 @@ public class UserDao {
     }
 
     @Transactional(readOnly=true)
+    @SuppressWarnings("unchecked")
     public List<User> findByEmailOrDisplayName(String criteria) {
         Query query = entityManager.createQuery("SELECT u FROM User u WHERE UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria");
         query.setParameter("criteria", "%" + criteria.toUpperCase() + "%");
@@ -101,6 +102,7 @@ public class UserDao {
     }
 
     @Transactional(readOnly=true)
+    @SuppressWarnings("unchecked")
     public List<User> findEnabledByEmailOrDisplayName(String criteria) {
         Query query = entityManager.createQuery("SELECT u FROM User u WHERE (u.enabled = TRUE) AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria)");
         query.setParameter("criteria", "%" + criteria.toUpperCase() + "%");

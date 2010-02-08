@@ -47,13 +47,13 @@ public class ContactController {
     }
 
     @RequestMapping(value = "/contact/addContact.htm", method = RequestMethod.POST)
-    public ModelAndView addContact(HttpServletRequest request,
+    public String addContact(HttpServletRequest request,
             @RequestParam(required = false, value = "selectedUsers") List<Long> selectedUsers) {
         if (selectedUsers != null) {
             logger.info("selected " + selectedUsers.size() + " users");
             userService.addContacts(request.getRemoteUser(), selectedUsers);
         }
-        return null;
+        return "redirect:/contact/listContacts.htm";
     }
 
     @RequestMapping(value = "/contact/searchUsers.htm", method = RequestMethod.POST)
