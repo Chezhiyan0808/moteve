@@ -15,15 +15,24 @@
  */
 package com.moteve.web;
 
+import com.moteve.domain.Group;
+import com.moteve.domain.User;
 import com.moteve.service.UserService;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -31,6 +40,7 @@ import org.springframework.web.servlet.ModelAndView;
  * @author Radek Skokan
  */
 @Controller
+@SessionAttributes("group")
 public class GroupController {
 
     private static final Logger logger = Logger.getLogger(GroupController.class);
@@ -61,5 +71,29 @@ public class GroupController {
             userService.removeGroups(request.getRemoteUser(), selectedGroups);
         }
         return "redirect:/group/manageGroups.htm";
+    }
+
+    @RequestMapping(value = "/group/manageGroupMembers.htm", method = RequestMethod.GET)
+    public ModelAndView setMembersForm(HttpServletRequest request,
+            @RequestParam(value="groupId") Long groupId) {
+        Map<String, Object> model = new HashMap<String, Object>();
+        Group group = userService.getGroup(groupId);
+        model.put("group", group);
+        List<User> availableContacts = userService.getAvailableContacts(request.getRemoteUser(), groupId);
+        List<User> groupMembers = userService.getGroupMembers(request.getRemoteUser(), groupId);
+        model.put("availableContacts", availableContacts);
+        model.put("groupMembers", groupMembers);
+        return new ModelAndView("/group/manageGroupMembers", model);
+    }
+
+    @RequestMapping(value = "/group/setGroupMembers.htm", method = RequestMethod.POST)
+    public String setGroupMembers(HttpServletRequest request,
+            @ModelAttribute("group") Group group,
+            @RequestParam(value="groupMembers", required=false) List<Long> groupMembers) {
+        if (groupMembers == null) {
+            groupMembers = new ArrayList<Long>();
+        }
+        userService.setGroupMembers(group.getId(), groupMembers);
+        return "redirect:/group/manageGroupMembers.htm?groupId=" + group.getId();
     }
 }

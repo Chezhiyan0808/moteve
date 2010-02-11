@@ -19,6 +19,7 @@ package com.moteve.dao;
 import com.moteve.domain.Authority;
 import com.moteve.domain.User;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -106,6 +107,39 @@ public class UserDao {
     public List<User> findEnabledByEmailOrDisplayName(String criteria) {
         Query query = entityManager.createQuery("SELECT u FROM User u WHERE (u.enabled = TRUE) AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria)");
         query.setParameter("criteria", "%" + criteria.toUpperCase() + "%");
+        return query.getResultList();
+    }
+
+    /**
+     * Finds contacts available for the given user and group. The result are
+     * contacts that the user has and are not already members of the specified group.
+     * @param email idenifies the user
+     * @param groupId identifies the group
+     * @return
+     */
+    @Transactional(readOnly=true)
+    @SuppressWarnings("unchecked")
+    public List<User> findAvailableGroupContacts(String email, Long groupId) {
+        Query query = entityManager.createQuery("SELECT c FROM User u, IN (u.contacts) c " +
+                "WHERE u.email = :email AND NOT EXISTS " +
+                "(SELECT m FROM Group g, IN (g.members) m WHERE g.id = :groupId AND c.id = m.id)");
+        query.setParameter("email", email);
+        query.setParameter("groupId", groupId);
+        return query.getResultList();
+    }
+
+    /**
+     * Finds contacts that the user has in the specified group.
+     * @param groupId
+     * @return
+     */
+    @Transactional(readOnly=true)
+    @SuppressWarnings("unchecked")
+    public List<User> findGroupContacts(Long groupId) {
+        //Query query = entityManager.createQuery("SELECT m FROM User u, IN (u.groups) g, IN (g.members) m WHERE u.email = :email AND g.id = :groupId");
+        Query query = entityManager.createQuery("SELECT m FROM Group g, IN (g.members) m WHERE g.id = :groupId");
+//        query.setParameter("email", email);
+        query.setParameter("groupId", groupId);
         return query.getResultList();
     }
 }

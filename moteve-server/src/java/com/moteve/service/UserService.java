@@ -20,6 +20,7 @@ import com.moteve.dao.GroupDao;
 import com.moteve.dao.UserDao;
 import com.moteve.domain.Authority;
 import com.moteve.domain.Group;
+import com.moteve.domain.Role;
 import com.moteve.domain.User;
 import java.util.ArrayList;
 import java.util.Date;
@@ -181,6 +182,72 @@ public class UserService {
 
         for (Long groupId : groupsToRemove) {
             groupDao.delete(groupId);
+        }
+    }
+
+    /**
+     * Finds contacts available for the given user and group. The result are
+     * contacts that the user has and are not already members of the specified group.
+     * @param email identifies the user
+     * @param groupId identifies the group
+     * @return
+     */
+    public List<User> getAvailableContacts(String email, Long groupId) {
+        if (email == null || groupId == null) {
+            return new ArrayList<User>();
+        }
+
+        try {
+            return userDao.findAvailableGroupContacts(email, groupId);
+        } catch (NoResultException e) {
+            return new ArrayList<User>();
+        }
+    }
+
+    /**
+     * Returns members of a user's group.
+     * @param email identifies the user
+     * @param groupId identifies the group
+     * @return
+     */
+    public List<User> getGroupMembers(String email, Long groupId) {
+        if (email == null || groupId == null) {
+            return new ArrayList<User>();
+        }
+
+        try {
+            return userDao.findGroupContacts(groupId);
+        } catch (NoResultException e) {
+            return new ArrayList<User>();
+        }
+    }
+
+    public Group getGroup(Long groupId) {
+        try {
+            return groupDao.findById(groupId);
+        } catch (NoResultException e) {
+            logger.error(e);
+            return null;
+        }
+    }
+
+    /**
+     * Updates members of a group
+     * @param groupId identifies the group
+     * @param memberIds  IDs of Users that are to be set as the group members
+     */
+    public void setGroupMembers(Long groupId, List<Long> memberIds) {
+        try {
+            Group group = groupDao.findById(groupId);
+            Set<Role> members = new HashSet<Role>();
+            for (Long userId : memberIds) {
+                User u = userDao.findById(userId);
+                members.add(u);
+            }
+            group.setMembers(members);
+            groupDao.store(group);
+        } catch (NoResultException e) {
+            logger.error(e);
         }
     }
 }
