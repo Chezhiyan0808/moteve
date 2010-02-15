@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Moteve</string>
+    <string name="captureVideo">Capture Video</string>
+    <string name="cancel">Cancel</string>
+    <string name="stop">Stop</string>
+    <string name="settings">Settings</string>
+    <string name="configConnection">Connection settings</string>
+    <string name="videoPermissions">Default Video Permissions</string>
+    <string name="ok">OK</string>
+    <string name="serverUrlText">Server URL</string>
+    <string name="emailText">E-mail</string>
+    <string name="passwordText">Password</string>
+</resources>
