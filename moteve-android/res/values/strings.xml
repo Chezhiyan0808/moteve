@@ -11,4 +11,5 @@
     <string name="serverUrlText">Server URL</string>
     <string name="emailText">E-mail</string>
     <string name="passwordText">Password</string>
+    <string name="groupPrompt">Choose a group</string>
 </resources>

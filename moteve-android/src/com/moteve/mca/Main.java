@@ -34,6 +34,5 @@ public class Main extends Activity {
 				startActivity(intent);
 			}
 		});
-        Toast.makeText(this, "Let's go!", Toast.LENGTH_LONG).show();
     }
 }

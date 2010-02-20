@@ -21,6 +21,11 @@ public class ConnectionSettings extends Activity {
     private static final String TAG = "Moteve_ConnectionSettings";
     private static final String MCA_DESC = "Moteve Android 20100220";
     private static final String AUTH_ERROR = "AUTH_ERROR";
+    
+    private SharedPreferences getPrefs() {
+	// TODO Here it's assumed the Configurer activity was already launched and the var is set
+	return Configurer.CONF_ACTIVITY.getPreferences(Context.MODE_PRIVATE);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +38,7 @@ public class ConnectionSettings extends Activity {
 	final EditText passwordEdit = (EditText) findViewById(R.id.password);
 	final Button okButton = (Button) findViewById(R.id.saveConnectionConfig);
 
-	SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+	SharedPreferences prefs = getPrefs();
 	serverUrlEdit.setText(prefs.getString("serverUrl", "http://moteve.com"));
 	emailEdit.setText(prefs.getString("email", ""));
 	passwordEdit.setText(prefs.getString("password", ""));
@@ -41,14 +46,16 @@ public class ConnectionSettings extends Activity {
 	okButton.setOnClickListener(new View.OnClickListener() {
 	    @Override
 	    public void onClick(View v) {
-		// TODO save settings
 		String serverUrl = serverUrlEdit.getText().toString();
 		String email = emailEdit.getText().toString();
 		String password = passwordEdit.getText().toString();
 		saveParams(serverUrl, email, password);
+		Toast.makeText(ctx, "Connecting to server", Toast.LENGTH_LONG).show();
 		String token = registerDevice(serverUrl, email, password);
 		if (token != null) {
-		    getPreferences(Context.MODE_PRIVATE).edit().putString("token", token);
+		    Editor editor = getPrefs().edit();
+		    editor.putString("token", token);
+		    editor.commit();
 		    Toast.makeText(ctx, "Connection OK", Toast.LENGTH_SHORT).show();
 		    finish();
 		} else {
@@ -58,7 +65,7 @@ public class ConnectionSettings extends Activity {
 
 	    private void saveParams(String serverUrl, String email,
 		    String password) {
-		Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
+		Editor editor = getPrefs().edit();
 		editor.putString("serverUrl", serverUrl);
 		editor.putString("email", email);
 		editor.putString("password", password);

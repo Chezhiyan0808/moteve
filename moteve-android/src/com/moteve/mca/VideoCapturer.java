@@ -19,7 +19,7 @@ public class VideoCapturer extends Activity implements SurfaceHolder.Callback {
 	// with temp
 	// files
 	private static final String MEDIA_TYPE = "3GPP";
-	private static final String TAG = "Mediator_VideoCapturer";
+	private static final String TAG = "Moteve_VideoCapturer";
 	public static final int MEDIA_DURATION = 5000;
 	private SurfaceView surfaceView;
 	private SurfaceHolder holder;

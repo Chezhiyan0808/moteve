@@ -20,7 +20,7 @@ import android.widget.Toast;
  */
 public class VideoUploader implements Runnable {
 
-	private static final String TAG = "Mediator_FileUploader";
+	private static final String TAG = "Moteve_FileUploader";
 	public static final String SERVER_URL = "http://192.168.1.14:8080/moteve/video/upload.htm";
 	public static final int BUFFER_SIZE = 8192;
 	public static final int SAMPLE_INTERVAL = 200; // ms

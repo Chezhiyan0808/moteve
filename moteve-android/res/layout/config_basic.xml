@@ -20,7 +20,8 @@
         android:id="@+id/videoPermissionsSpinner"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:drawSelectorOnTop="true" />
+        android:drawSelectorOnTop="true"
+        android:prompt="@string/groupPrompt" />
         
     <Button
 		android:id="@+id/saveConfig"
