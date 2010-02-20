@@ -73,6 +73,12 @@ public class User extends Role implements Serializable {
         inverseJoinColumns=@JoinColumn(name="authority_id", referencedColumnName="id"))
     Set<Authority> authorities;
 
+    /**
+     * Mobile devices that the user has authenticated
+     */
+    @OneToMany(mappedBy="user")
+    private Set<Device> devices;
+
     public Set<User> getContacts() {
         return contacts;
     }
@@ -135,6 +141,14 @@ public class User extends Role implements Serializable {
 
     public void setAuthorities(Set<Authority> authorities) {
         this.authorities = authorities;
+    }
+
+    public Set<Device> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(Set<Device> devices) {
+        this.devices = devices;
     }
 
 }

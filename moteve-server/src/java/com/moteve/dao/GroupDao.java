@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Radek Skokan
  */
-@Repository("groupDao")
+@Repository
 public class GroupDao {
 
     @PersistenceContext

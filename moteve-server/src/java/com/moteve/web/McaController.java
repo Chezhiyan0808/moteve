@@ -15,8 +15,8 @@
  */
 package com.moteve.web;
 
+import com.moteve.domain.Group;
 import com.moteve.domain.User;
-import com.moteve.domain.Video;
 import com.moteve.service.UserService;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,39 +28,133 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
- * Controller for handling video up- and down-loads and streaming.
+ * Controller responsible for communication with Moteve Client Applications
+ * (that run typically on mobile phones).
  *
  * @author Radek Skokan
  */
 @Controller
-public class VideoController {
+public class McaController {
 
     /**
      * Buffer size for video streaming over HTTP
      */
     public static final int BUFFER_SIZE = 8192;
+
     private static final String PASSWORD_DELIMITER = "\\";
 
-    private static final Logger logger = Logger.getLogger(VideoController.class);
+    private static final Logger logger = Logger.getLogger(McaController.class);
 
     @Autowired
     private UserService userService;
+
+    /**
+     * Before a Moteve Client Application (a mobile phone typically) starts any
+     * communication with the server, it first needs to authenticate.
+     * When the authentication process is successful, MCA is given a security
+     * token that is then used when sending requests to the server.
+     *
+     * @param request contains HTTP header Moteve-Auth with email\password\device_description
+     * @param response contains HTTP header Moteve-Token with the generated security token
+     *          or AUTH_ERROR if the authentication failed. The token value is also in the
+     *          response body.
+     */
+    @RequestMapping(value = "/mca/register.htm", method = RequestMethod.POST)
+    public void registerMca(HttpServletRequest request, HttpServletResponse response) {
+        String authHeader = request.getHeader("Moteve-Auth");
+        if (authHeader == null) {
+            return;
+        }
+
+        int emailPasswordDelimiter = authHeader.indexOf("\\");
+        int passwordDescDelimiter = authHeader.lastIndexOf("\\");
+        if (emailPasswordDelimiter < 1 || passwordDescDelimiter < 1 || emailPasswordDelimiter == passwordDescDelimiter) {
+            return;
+        }
+
+        String email = authHeader.substring(0, emailPasswordDelimiter);
+        String password = authHeader.substring(emailPasswordDelimiter + 1, passwordDescDelimiter);
+        String desc = authHeader.substring(passwordDescDelimiter + 1);
+
+        logger.info("Authenticating MCA. E-mail=" + email + ", pwd=" + password + ", desc=" + desc);
+        User user = userService.authenticate(email, password);
+        PrintWriter out = null;
+        try {
+            out = new PrintWriter(response.getOutputStream());
+            response.setContentType("text/html");
+            if (user == null) {
+                logger.info("MCA authentication failed for user " + email);
+                response.setHeader("Moteve-Token", "AUTH_ERROR");
+                out.print("AUTH_ERROR");
+            } else {
+                logger.info("MCA authentication successful for user " + email);
+                String token = userService.registerMca(user, desc);
+                response.setHeader("Moteve-Token", token);
+                out.print(token);
+            }
+        } catch (IOException e) {
+            logger.error(e);
+        } finally {
+            out.flush();
+            out.close();
+        }
+    }
+
+    /**
+     * Provides list with names of Groups that the user has configured on the server.
+     *
+     * @param request must contain HTTP header Moteve-Token with the value
+     *          received during device registration
+     * @param response the HTTP body contains list of group names the user has.
+     *          The groups are delimited by a backslash (\) letter.
+     */
+    @RequestMapping(value = "/mca/listGroups.htm", method = RequestMethod.POST)
+    public void listGroups(HttpServletRequest request, HttpServletResponse response) {
+        PrintWriter out = null;
+        try {
+            out = new PrintWriter(response.getOutputStream());
+            response.setContentType("text/html");
+            String token = request.getHeader("Moteve-Token");
+            if (token == null) {
+                response.setHeader("Moteve-Token", "MISSING_TOKEN");
+                out.print("MISSING_TOKEN");
+                return;
+            }
+
+            User user = userService.getUserForDevice(token);
+            if (user == null) {
+                response.setHeader("Moteve-Token", "WRONG_TOKEN");
+                out.print("WRONG_TOKEN");
+                return;
+            }
+
+            StringBuffer groupNames = new StringBuffer();
+            for (Group group : user.getGroups()) {
+                groupNames.append(group.getName()).append("\\");
+            }
+
+            out.print(groupNames.toString());
+        } catch (IOException e) {
+            logger.error(e);
+        } finally {
+            out.flush();
+            out.close();
+        }
+    }
 
     /**
      * HTTP POST method for uploading captured video parts.<br/>
      * The Process is:
      * <ul>
      * <li>Client sends <code>Moteve-Sequence</code> header containing <code>new</code>.
-     * Also the <code>Moteve-Auth</code> header is filled with the user name and password.
-     * A back slash "\" is used as a delimiter</li>
+     * Also the <code>Moteve-Token</code> header is present.
      *
      * <li>Server replies with a video sequence number to be used in response header
-     * <code>Moteve-Sequence</code> and also a token in <code>Moteve-Token</code>.</li>
+     * <code>Moteve-Sequence</code>.</li>
      *
      * <li>Client is then sending the video parts in the POST data. Each request must contain
      * in its <code>Moteve-Sequence</code> header the obtained number and also
@@ -75,7 +169,7 @@ public class VideoController {
      * @param request
      * @param response
      */
-    @RequestMapping(value = "/video/upload.htm", method = RequestMethod.POST)
+    @RequestMapping(value = "/mca/upload.htm", method = RequestMethod.POST)
     public void uploadVideo(HttpServletRequest request, HttpServletResponse response) {
         logger.info("uploadVideo");
 

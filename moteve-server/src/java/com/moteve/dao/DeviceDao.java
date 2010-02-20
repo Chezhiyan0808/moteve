@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.dao;
 
-import com.moteve.domain.Authority;
+import com.moteve.domain.Device;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -29,38 +28,38 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Radek Skokan
  */
 @Repository
-public class AuthorityDao {
+public class DeviceDao {
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Transactional
-    public void store(Authority authority) {
-        entityManager.merge(authority);
+    public void store(Device device) {
+        entityManager.merge(device);
     }
 
     @Transactional
-    public void delete(Long authorityId) {
-        Authority authority = entityManager.find(Authority.class, authorityId);
-        entityManager.remove(authority);
+    public void delete(Long deviceId) {
+        Device device = entityManager.find(Device.class, deviceId);
+        entityManager.remove(device);
     }
 
     @Transactional(readOnly = true)
-    public Authority findById(Long authorityId) {
-        return entityManager.find(Authority.class, authorityId);
+    public Device findById(Long deviceId) {
+        return entityManager.find(Device.class, deviceId);
     }
 
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<Authority> findAll() {
-        Query query = entityManager.createQuery("SELECT a FROM Authority a");
+    public List<Device> findAll() {
+        Query query = entityManager.createQuery("SELECT d FROM Device d");
         return query.getResultList();
     }
 
-    @Transactional(readOnly=true)
-    public Authority findByName(String name) {
-        Query query = entityManager.createQuery("SELECT a FROM Authority a WHERE a.name = :name");
-        query.setParameter("name", name);
-        return  (Authority) query.getSingleResult();
+    @Transactional(readOnly = true)
+    public Device findByToken(String token) {
+        Query query = entityManager.createQuery("SELECT D FROM Device d WHERE d.token = :token");
+        query.setParameter("token", token);
+        return (Device) query.getSingleResult();
     }
 }

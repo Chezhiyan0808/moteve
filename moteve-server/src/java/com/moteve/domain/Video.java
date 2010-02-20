@@ -72,12 +72,6 @@ public class Video implements Serializable {
         inverseJoinColumns=@JoinColumn(name="role_id", referencedColumnName="id"))
     private Set<Role> permissions;
 
-    /**
-     * A security token used for uploading video parts
-     */
-    @Column(name="token")
-    private String token;
-
     public User getAuthor() {
         return author;
     }
@@ -140,14 +134,6 @@ public class Video implements Serializable {
 
     public void setRecordInProgress(boolean recordInProgress) {
         this.recordInProgress = recordInProgress;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
     }
     
 }

@@ -19,7 +19,6 @@ package com.moteve.dao;
 import com.moteve.domain.Authority;
 import com.moteve.domain.User;
 import java.util.List;
-import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -32,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Radek Skokan
  */
-@Repository("userDao")
+@Repository
 public class UserDao {
 
     @PersistenceContext
@@ -105,7 +104,8 @@ public class UserDao {
     @Transactional(readOnly=true)
     @SuppressWarnings("unchecked")
     public List<User> findEnabledByEmailOrDisplayName(String criteria) {
-        Query query = entityManager.createQuery("SELECT u FROM User u WHERE (u.enabled = TRUE) AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria)");
+        Query query = entityManager.createQuery("SELECT u FROM User u WHERE (u.enabled = TRUE) " +
+                "AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria)");
         query.setParameter("criteria", "%" + criteria.toUpperCase() + "%");
         return query.getResultList();
     }

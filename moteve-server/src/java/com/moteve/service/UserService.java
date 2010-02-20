@@ -16,9 +16,11 @@
 package com.moteve.service;
 
 import com.moteve.dao.AuthorityDao;
+import com.moteve.dao.DeviceDao;
 import com.moteve.dao.GroupDao;
 import com.moteve.dao.UserDao;
 import com.moteve.domain.Authority;
+import com.moteve.domain.Device;
 import com.moteve.domain.Group;
 import com.moteve.domain.Role;
 import com.moteve.domain.User;
@@ -30,6 +32,7 @@ import java.util.Set;
 import javax.persistence.NoResultException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -49,6 +52,12 @@ public class UserService {
 
     @Autowired
     GroupDao groupDao;
+
+    @Autowired
+    DeviceDao deviceDao;
+
+    @Autowired
+    MessageDigestPasswordEncoder digest;
 
     /**
      * Registers a new user into the system and grants him the MEMBER role.
@@ -248,6 +257,62 @@ public class UserService {
             groupDao.store(group);
         } catch (NoResultException e) {
             logger.error(e);
+        }
+    }
+
+    /**
+     * Registers a new MCA with a user and returns a security token used for
+     * further communication with the MCA.
+     * The security token is unique in the system so it is possible
+     * based on it to identify the MCA and find its user.
+     * 
+     * @param user
+     * @param mcaDescription
+     * @return
+     */
+    public String registerMca(User user, String mcaDescription) {
+        String token = null;
+        // Generate a unique token
+        try {
+            while (true) {
+                token = generateDeviceToken(user);
+                // now we expect the token does not exist yet and NoResultException
+                // will be thrown and we skip out of the cycle
+                deviceDao.findByToken(token);
+                logger.warn("A device with token " + token + " already exists. Generating another token.");
+            }
+        } catch (NoResultException e) {
+            // nothing, it's OK that no device with the token exists yet
+        }
+
+        Device device = new Device();
+        device.setUser(user);
+        device.setAuthDate(new Date());
+        device.setToken(token);
+        device.setDescription(mcaDescription);
+        deviceDao.store(device);
+        logger.info("Registered a new device for user " + user.getEmail() + ": token=" + device.getToken() + ", desc=" + device.getDescription());
+
+        return token;
+    }
+
+    private String generateDeviceToken(User user) {
+        String text = user.getEmail() + System.currentTimeMillis();
+        String token = digest.encodePassword(text, null);
+        return token;
+    }
+
+    /**
+     * Finds user that has registered a device identified by token.
+     * @param deviceToken
+     * @return the user associated with the device; null if there is no such user or device
+     */
+    public User getUserForDevice(String deviceToken) {
+        try {
+            Device device = deviceDao.findByToken(deviceToken);
+            return device.getUser();
+        } catch (NoResultException e) {
+            return null;
         }
     }
 }
