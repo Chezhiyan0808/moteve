@@ -16,7 +16,7 @@
 
 package com.moteve.dao;
 
-import com.moteve.domain.Authority;
+import com.moteve.domain.MediaFormat;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -29,38 +29,37 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Radek Skokan
  */
 @Repository
-public class AuthorityDao {
+public class MediaFormatDao {
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Transactional
-    public Authority store(Authority authority) {
-        return entityManager.merge(authority);
+    public MediaFormat store(MediaFormat mediaFormat) {
+        return entityManager.merge(mediaFormat);
     }
 
     @Transactional
-    public void delete(Long authorityId) {
-        Authority authority = entityManager.find(Authority.class, authorityId);
-        entityManager.remove(authority);
+    public void delete(Long mediaFormatId) {
+        MediaFormat mediaFormat = entityManager.find(MediaFormat.class, mediaFormatId);
+        entityManager.remove(mediaFormat);
     }
 
     @Transactional(readOnly = true)
-    public Authority findById(Long authorityId) {
-        return entityManager.find(Authority.class, authorityId);
+    public MediaFormat findById(Long mediaFormatId) {
+        return entityManager.find(MediaFormat.class, mediaFormatId);
     }
 
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<Authority> findAll() {
-        Query query = entityManager.createQuery("SELECT a FROM Authority a");
+    public List<MediaFormat> findAll() {
+        Query query = entityManager.createQuery("SELECT mf FROM MediaFormat mf");
         return query.getResultList();
     }
 
-    @Transactional(readOnly=true)
-    public Authority findByName(String name) {
-        Query query = entityManager.createQuery("SELECT a FROM Authority a WHERE a.name = :name");
+    public MediaFormat findByName(String name) {
+        Query query = entityManager.createQuery("SELECT mf FROM MediaFormat mf WHERE mf.name = :name");
         query.setParameter("name", name);
-        return  (Authority) query.getSingleResult();
+        return (MediaFormat) query.getSingleResult();
     }
 }

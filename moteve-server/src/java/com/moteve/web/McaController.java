@@ -16,13 +16,13 @@
 package com.moteve.web;
 
 import com.moteve.domain.Group;
+import com.moteve.domain.MoteveException;
 import com.moteve.domain.User;
+import com.moteve.domain.Video;
 import com.moteve.service.UserService;
-import java.io.File;
-import java.io.FileOutputStream;
+import com.moteve.service.VideoService;
 import java.io.IOException;
 import java.io.PrintWriter;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
@@ -40,17 +40,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class McaController {
 
-    /**
-     * Buffer size for video streaming over HTTP
-     */
-    public static final int BUFFER_SIZE = 8192;
-
-    private static final String PASSWORD_DELIMITER = "\\";
+    private static final String DELIMITER = "\\";
 
     private static final Logger logger = Logger.getLogger(McaController.class);
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private VideoService videoService;
 
     /**
      * Before a Moteve Client Application (a mobile phone typically) starts any
@@ -70,8 +68,8 @@ public class McaController {
             return;
         }
 
-        int emailPasswordDelimiter = authHeader.indexOf("\\");
-        int passwordDescDelimiter = authHeader.lastIndexOf("\\");
+        int emailPasswordDelimiter = authHeader.indexOf(DELIMITER);
+        int passwordDescDelimiter = authHeader.lastIndexOf(DELIMITER);
         if (emailPasswordDelimiter < 1 || passwordDescDelimiter < 1 || emailPasswordDelimiter == passwordDescDelimiter) {
             return;
         }
@@ -80,7 +78,7 @@ public class McaController {
         String password = authHeader.substring(emailPasswordDelimiter + 1, passwordDescDelimiter);
         String desc = authHeader.substring(passwordDescDelimiter + 1);
 
-        logger.info("Authenticating MCA. E-mail=" + email + ", pwd=" + password + ", desc=" + desc);
+        logger.debug("Authenticating MCA. E-mail=" + email + ", desc=" + desc);
         User user = userService.authenticate(email, password);
         PrintWriter out = null;
         try {
@@ -88,8 +86,8 @@ public class McaController {
             response.setContentType("text/html");
             if (user == null) {
                 logger.info("MCA authentication failed for user " + email);
-                response.setHeader("Moteve-Token", "AUTH_ERROR");
-                out.print("AUTH_ERROR");
+                response.setHeader("Moteve-Token", "ERROR: Authentication failed");
+                out.print("ERROR: Authentication failed");
             } else {
                 logger.info("MCA authentication successful for user " + email);
                 String token = userService.registerMca(user, desc);
@@ -120,22 +118,24 @@ public class McaController {
             response.setContentType("text/html");
             String token = request.getHeader("Moteve-Token");
             if (token == null) {
-                response.setHeader("Moteve-Token", "MISSING_TOKEN");
-                out.print("MISSING_TOKEN");
+                response.setHeader("Moteve-Token", "ERROR: Missing token");
+                out.print("ERROR: Missing token");
                 return;
             }
 
             User user = userService.getUserForDevice(token);
             if (user == null) {
-                response.setHeader("Moteve-Token", "WRONG_TOKEN");
-                out.print("WRONG_TOKEN");
+                response.setHeader("Moteve-Token", "ERROR: Wrong token");
+                out.print("ERROR: Wrong token");
                 return;
             }
 
             StringBuffer groupNames = new StringBuffer();
             for (Group group : user.getGroups()) {
-                groupNames.append(group.getName()).append("\\");
+                groupNames.append(group.getName()).append(DELIMITER);
             }
+
+            groupNames.append(Group.JUST_ME);
 
             out.print(groupNames.toString());
         } catch (IOException e) {
@@ -150,20 +150,21 @@ public class McaController {
      * HTTP POST method for uploading captured video parts.<br/>
      * The Process is:
      * <ul>
-     * <li>Client sends <code>Moteve-Sequence</code> header containing <code>new</code>.
-     * Also the <code>Moteve-Token</code> header is present.
+     * <li>Client sends headers: <code>Moteve-Sequence</code> containing <code>new</code>,
+     * <code>Moteve-DefaultGroup</code> containing
+     * and <code>Moteve-MediaFormat</code> containing the video format, e.g. 3GPP-H.263-AMR_NB.
      *
      * <li>Server replies with a video sequence number to be used in response header
-     * <code>Moteve-Sequence</code>.</li>
+     * <code>Moteve-Sequence</code> and the response body.</li>
      *
      * <li>Client is then sending the video parts in the POST data. Each request must contain
-     * in its <code>Moteve-Sequence</code> header the obtained number and also
-     * a <code>Moteve-Part</code> header with the video part number. They should start at 1.
-     * Header <code>Moteve-Token</code> must be set.</li>
+     * in its <code>Moteve-Sequence</code> header the obtained number.
+     * The video parts are added to the video sequence in the order as they are received.
      *
      * <li>When all video parts has been uploaded, the client close the process by sending
      * the <code>Moteve-Sequence</code> header set to <code>close_<the_seq_number></code>.
-     * Header <code>Moteve-Token</code> must be set.</li>
+     *
+     * Header <code>Moteve-Token</code> must be set for all operations.</li>
      * </ul>
      *
      * @param request
@@ -171,8 +172,6 @@ public class McaController {
      */
     @RequestMapping(value = "/mca/upload.htm", method = RequestMethod.POST)
     public void uploadVideo(HttpServletRequest request, HttpServletResponse response) {
-        logger.info("uploadVideo");
-
         PrintWriter out = null;
 
         try {
@@ -180,115 +179,85 @@ public class McaController {
             response.setContentType("text/html");
 
             String sequence = request.getHeader("Moteve-Sequence");
+            logger.debug("sequence=" + sequence);
             if (sequence == null || sequence.length() == 0) {
-                out.println("ERROR");
-                out.println("Missing Moteve-Sequence parameter");
+                response.setHeader("Moteve-Sequence", "ERROR: Missing Moteve-Sequence parameter");
+                out.print("ERROR: Missing Moteve-Sequence parameter");
+                return;
+            }
 
-            } else if (sequence.equals("new")) {
-                User user = getUser(request, response);
-                if (user != null) {
-//                    sequence = newVideo(request, response);
-                    out.print(sequence);
+            User user = getUserFromToken(request);
+            if (user == null) {
+                response.setHeader("Moteve-Token", "ERROR: Token error");
+                out.print("ERROR: Token error");
+                return;
+            }
+
+            if (sequence.equals("new")) {
+                String defaultGroupName = request.getHeader("Moteve-DefaultGroup");
+                String mediaFormat = request.getHeader("Moteve-MediaFormat");
+                try {
+                    Video video = videoService.startRecording(user, mediaFormat, defaultGroupName);
+                    logger.info("Started a new video, id=" + video.getId() + ", author=" + video.getAuthor().getEmail());
+                    response.setHeader("Moteve-Sequence", String.valueOf(video.getId()));
+                    out.print(String.valueOf(video.getId()));
+                } catch (MoteveException e) {
+                    response.setHeader("Moteve-Sequence", "ERROR: " + e.getMessage());
+                    out.print("ERROR: " + e.getMessage());
                 }
 
             } else if (sequence.startsWith("close_")) {
-                if (checkToken(request, response)) {
-                    sequence = sequence.substring("close_".length());
-                    closeSequence(sequence);
-                    out.println(sequence + " closed");
+                sequence = sequence.substring("close_".length());
+                try {
+                    Long videoId = Long.parseLong(sequence);
+                    videoService.finishRecording(user, videoId);
+                    logger.info("Closed video, id=" + videoId);
+                    response.setHeader("Moteve-Sequence", sequence + " closed");
+                    out.print(sequence + " closed");
+                } catch (NumberFormatException e) {
+                    response.setHeader("Moteve-Sequence", "ERROR: Wrong sequence number format");
+                    out.print("ERROR: Wrong sequence number format");
+                } catch (MoteveException e) {
+                    response.setHeader("Moteve-Sequence", "ERROR: " + e.getMessage());
+                    out.print("ERROR: " + e.getMessage());
                 }
 
             } else {
-                if (checkToken(request, response)) {
-                    String part = request.getHeader("Moteve-Part");
-                    if (part == null || part.length() == 0) {
-                        out.println("ERROR");
-                        out.println("Missing Moteve-Part parameter");
-                    } else {
-                        writeFile(sequence, part, request.getInputStream());
-                        out.println("OK");
-                    }
+                try {
+                    Long videoId = Long.parseLong(sequence);
+                    videoService.addPart(videoId, request.getInputStream());
+                    logger.info("Added a video part, videoId=" + videoId);
+                    response.setHeader("Moteve-Sequence", "OK");
+                    out.print("OK");
+                } catch (NumberFormatException e) {
+                    response.setHeader("Moteve-Sequence", "ERROR: Wrong sequence number format");
+                    out.print("ERROR: Wrong sequence number format");
+                } catch (Exception e) {
+                    response.setHeader("Moteve-Sequence", "ERROR: " + e.getMessage());
+                    out.print("ERROR: " + e.getMessage());
                 }
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error processing video upload request", e);
+            out.print("ERROR: System error");
         } finally {
             out.flush();
             out.close();
         }
     }
 
-    private void writeFile(String sequence, String part, ServletInputStream sis) throws IOException {
-        FileOutputStream fos = null;
-        File f;
-        try {
-            f = new File(buildFilePath(sequence, part));
-            fos = new FileOutputStream(f);
-
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int bytesRead;
-            int totalSize = 0;
-            while ((bytesRead = sis.read(buffer)) != -1) {
-                totalSize += bytesRead;
-                fos.write(buffer, 0, bytesRead);
-            }
-            logger.info("Bytes written: " + totalSize + ". Total file (" + f.getAbsolutePath() + ") size: " + f.length() + " B.");
-        } finally {
-            fos.flush();
-            fos.close();
-            sis.close();
-        }
-    }
-
-    private void closeSequence(String sequence) {
-        // TODO Auto-generated method stub
-    }
-
-    private String newSequence() {
-        // TODO: use DB sequence
-        String rand = String.valueOf((long) Math.random() * 1000);
-        return System.currentTimeMillis() + rand;
-    }
-
-    private String buildFilePath(String sequence, String part) {
-        return "C:/temp/moteve/" + sequence + "_" + part + ".3gp";
-    }
-
-    /**
-     * Authenticates the user name with the password specified in the Moteve-Auth header.
-     *
-     * @param request
-     * @param response
-     * @return the User if the authentication was successfull. Otherwise null and also
-     *      sets the header fields accordingly.
-     */
-    private User getUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String auth = request.getHeader("Moteve-Auth");
-        if (auth == null || auth.length() == 0) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing Moteve-Auth parameter");
+    private User getUserFromToken(HttpServletRequest request) {
+        String token = request.getHeader("Moteve-Token");
+        if (token == null) {
             return null;
         }
 
-        int delimiterPos = auth.indexOf(PASSWORD_DELIMITER);
-        String username = auth.substring(0, delimiterPos);
-        String password = auth.substring(delimiterPos);
-        User user = userService.authenticate(username, password);
+        User user = userService.getUserForDevice(token);
+        logger.debug("token " + token + " belongs to user " + user.getEmail());
         if (user == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing Moteve-Auth parameter");
+            return null;
         }
-
         return user;
-    }
-
-    /**
-     * Checks if the security token in Moteve-Token belongs to the video identified
-     * by Moteve-Sequence.
-     * @param request
-     * @param response
-     * @return true if the token matches the video. Otherwise false and also sets the response header accordingly
-     */
-    private boolean checkToken(HttpServletRequest request, HttpServletResponse response) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -51,28 +52,36 @@ public class UserService {
     private AuthorityDao authorityDao;
 
     @Autowired
-    GroupDao groupDao;
+    private GroupDao groupDao;
 
     @Autowired
-    DeviceDao deviceDao;
+    private DeviceDao deviceDao;
 
     @Autowired
-    MessageDigestPasswordEncoder digest;
+    private MessageDigestPasswordEncoder digester;
 
     /**
      * Registers a new user into the system and grants him the MEMBER role.
      * 
      * @param user
      */
+    @Transactional
     public void register(User user) {
         logger.info("Registering user " + user.getEmail());
+        user.setPassword(digester.encodePassword(user.getPassword(), null));
         user.setRegistrationDate(new Date());
         user.setEnabled(true);
         Authority memberAuthority = authorityDao.findByName(Authority.MEMBER);
         Set<Authority> authorities = new HashSet<Authority>();
         authorities.add(memberAuthority);
         user.setAuthorities(authorities);
-        userDao.store(user);
+        user = userDao.store(user);
+
+        // add the PUBLIC group
+        Group publicGroup = new Group();
+        publicGroup.setName(Group.PUBLIC);
+        publicGroup.setUser(user);
+        groupDao.store(publicGroup);
     }
 
     /**
@@ -83,7 +92,8 @@ public class UserService {
      */
     public User authenticate(String email, String password) {
         try {
-            return userDao.findByEmailAndPassword(email, password);
+            String encPassword = digester.encodePassword(password, null);
+            return userDao.findByEmailAndPassword(email, encPassword);
         } catch (NoResultException e) {
             return null;
         }
@@ -97,11 +107,12 @@ public class UserService {
      * </ul>
      *
      * @param criteria
+     * @param excludeEmail user to exclude from the results
      * @return matching Users
      */
-    public List<User> findUsers(String criteria) {
+    public List<User> findUsers(String criteria, String excludeEmail) {
         try {
-            return userDao.findEnabledByEmailOrDisplayName(criteria);
+            return userDao.findEnabledByEmailOrDisplayName(criteria, excludeEmail);
         } catch (NoResultException e) {
             return new ArrayList<User>();
         }
@@ -112,6 +123,7 @@ public class UserService {
      * @param email the user's email address
      * @param contactIds IDs of users to be added as contacts
      */
+    @Transactional
     public void addContacts(String email, List<Long> contactIds) {
         if (email == null || contactIds == null || contactIds.size() == 0) {
             return;
@@ -163,6 +175,7 @@ public class UserService {
      * @param email
      * @param groupName
      */
+    @Transactional
     public void createGroup(String email, String groupName) {
         if (email == null) {
             return;
@@ -184,6 +197,7 @@ public class UserService {
      * @param email identifies the user
      * @param groupsToRemove IDs of the groups to be removed
      */
+    @Transactional
     public void removeGroups(String email, List<Long> groupsToRemove) {
         if (email == null || groupsToRemove == null || groupsToRemove.size() == 0) {
             return;
@@ -245,6 +259,7 @@ public class UserService {
      * @param groupId identifies the group
      * @param memberIds  IDs of Users that are to be set as the group members
      */
+    @Transactional
     public void setGroupMembers(Long groupId, List<Long> memberIds) {
         try {
             Group group = groupDao.findById(groupId);
@@ -298,7 +313,7 @@ public class UserService {
 
     private String generateDeviceToken(User user) {
         String text = user.getEmail() + System.currentTimeMillis();
-        String token = digest.encodePassword(text, null);
+        String token = digester.encodePassword(text, null);
         return token;
     }
 

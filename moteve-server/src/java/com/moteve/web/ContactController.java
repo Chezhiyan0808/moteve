@@ -57,8 +57,10 @@ public class ContactController {
     }
 
     @RequestMapping(value = "/contact/searchUsers.htm", method = RequestMethod.POST)
-    public ModelAndView searchUsers(@RequestParam("searchCriteria") String searchCriteria) {
-        return new ModelAndView("contact/addContact", "users", userService.findUsers(searchCriteria));
+    public ModelAndView searchUsers(@RequestParam("searchCriteria") String searchCriteria,
+            HttpServletRequest request) {
+        return new ModelAndView("contact/addContact", "users",
+                userService.findUsers(searchCriteria, request.getRemoteUser()));
     }
 
     @RequestMapping(value = "/contact/listContacts.htm", method = RequestMethod.GET)

@@ -28,6 +28,7 @@ import javax.persistence.NoResultException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * A utility class that performs initial system setup such as creating required
@@ -47,6 +48,7 @@ public class SystemInitializer {
     private static final Logger logger = Logger.getLogger(SystemInitializer.class);
 
     @PostConstruct
+    @Transactional
     public void init() {
         logger.info("Initializing Moteve system database");
         checkAuthorities();

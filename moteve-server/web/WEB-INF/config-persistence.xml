@@ -32,7 +32,7 @@
     <bean id="jpaVendorAdapter"
           class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"
           p:databasePlatform="org.hibernate.dialect.PostgreSQLDialect"
-          p:showSql="true"
+          p:showSql="false"
           p:generateDdl="true" />
 
     <bean id="entityManagerFactory"

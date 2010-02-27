@@ -29,6 +29,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -71,6 +72,18 @@ public class Video implements Serializable {
         joinColumns=@JoinColumn(name="video_id", referencedColumnName="id"),
         inverseJoinColumns=@JoinColumn(name="role_id", referencedColumnName="id"))
     private Set<Role> permissions;
+
+    @ManyToOne
+    private MediaFormat sourceFormat;
+
+    @ManyToOne
+    private MediaFormat targetFormat;
+
+    @OneToOne
+    private VideoPart firstPart;
+
+    @OneToOne
+    private VideoPart lastPart;
 
     public User getAuthor() {
         return author;
@@ -135,5 +148,37 @@ public class Video implements Serializable {
     public void setRecordInProgress(boolean recordInProgress) {
         this.recordInProgress = recordInProgress;
     }
-    
+
+    public MediaFormat getSourceFormat() {
+        return sourceFormat;
+    }
+
+    public void setSourceFormat(MediaFormat sourceFormat) {
+        this.sourceFormat = sourceFormat;
+    }
+
+    public MediaFormat getTargetFormat() {
+        return targetFormat;
+    }
+
+    public void setTargetFormat(MediaFormat targetFormat) {
+        this.targetFormat = targetFormat;
+    }
+
+    public VideoPart getFirstPart() {
+        return firstPart;
+    }
+
+    public void setFirstPart(VideoPart firstPart) {
+        this.firstPart = firstPart;
+    }
+
+    public VideoPart getLastPart() {
+        return lastPart;
+    }
+
+    public void setLastPart(VideoPart lastPart) {
+        this.lastPart = lastPart;
+    }
+
 }

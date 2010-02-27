@@ -36,6 +36,9 @@ import javax.persistence.UniqueConstraint;
 @Table(name="mt_group", uniqueConstraints=@UniqueConstraint(columnNames={"name", "user_id"}))
 public class Group extends Role implements Serializable {
 
+    public static final String PUBLIC = "PUBLIC";
+    public static final String JUST_ME = "JUST_ME";
+
     @Column(name = "name", nullable=false) // not unique as many users can have the same name of their groups, which are globally different
     private String name;
 

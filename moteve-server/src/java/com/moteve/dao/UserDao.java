@@ -22,8 +22,6 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.encoding.MessageDigestPasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,13 +35,9 @@ public class UserDao {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Autowired
-    MessageDigestPasswordEncoder passwordEncoder;
-
     @Transactional
-    public void store(User user) {
-        user.setPassword(passwordEncoder.encodePassword(user.getPassword(), null));
-        entityManager.merge(user);
+    public User store(User user) {
+        return entityManager.merge(user);
     }
 
     @Transactional
@@ -85,8 +79,7 @@ public class UserDao {
     }
 
     @Transactional(readOnly=true)
-    public User findByEmailAndPassword(String email, String clearTextPassword) {
-        String encPassword = passwordEncoder.encodePassword(clearTextPassword, null);
+    public User findByEmailAndPassword(String email, String encPassword) {
         Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email AND password = :password");
         query.setParameter("email", email);
         query.setParameter("password", encPassword);
@@ -101,11 +94,27 @@ public class UserDao {
         return query.getResultList();
     }
 
+    /**
+     * Finds enabled users mathing the search criteria in email or display name.
+     * @param criteria the search criteria
+     * @param excludeEmail if not null, user with the specified email address is excluded from the results
+     * @return
+     */
     @Transactional(readOnly=true)
     @SuppressWarnings("unchecked")
-    public List<User> findEnabledByEmailOrDisplayName(String criteria) {
-        Query query = entityManager.createQuery("SELECT u FROM User u WHERE (u.enabled = TRUE) " +
-                "AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria)");
+    public List<User> findEnabledByEmailOrDisplayName(String criteria, String excludeEmail) {
+        final String queryStringAll = "SELECT u FROM User u WHERE (u.enabled = TRUE) " +
+                "AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria)";
+        final String queryStringExclude = "SELECT u FROM User u WHERE (u.enabled = TRUE) " +
+                "AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria) " +
+                "AND (u.email <> :excludeEmail)";
+        Query query;
+        if (excludeEmail == null) {
+            query = entityManager.createQuery(queryStringAll);
+        } else {
+            query = entityManager.createQuery(queryStringExclude);
+            query.setParameter("excludeEmail", excludeEmail);
+        }
         query.setParameter("criteria", "%" + criteria.toUpperCase() + "%");
         return query.getResultList();
     }

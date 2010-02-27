@@ -34,8 +34,8 @@ public class DeviceDao {
     private EntityManager entityManager;
 
     @Transactional
-    public void store(Device device) {
-        entityManager.merge(device);
+    public Device store(Device device) {
+        return entityManager.merge(device);
     }
 
     @Transactional

@@ -26,6 +26,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 
@@ -43,12 +44,6 @@ public class VideoPart implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    /**
-     * A video part identificator in the whole video sequence
-     */
-    @Column(name="part_id", nullable=false)
-    private int partId;
-
     @Column(name="capture_time", nullable=false)
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date captureTime;
@@ -65,14 +60,11 @@ public class VideoPart implements Serializable {
     @Column(name="target_location")
     private String targetLocation;
 
-    @ManyToOne
-    private MediaFormat sourceFormat;
-
-    @ManyToOne
-    private MediaFormat targetFormat;
-
     @ManyToOne(cascade=CascadeType.REMOVE)
     private Video video;
+
+    @OneToOne
+    private VideoPart nextPart;
 
     public Date getCaptureTime() {
         return captureTime;
@@ -106,14 +98,6 @@ public class VideoPart implements Serializable {
         this.id = id;
     }
 
-    public int getPartId() {
-        return partId;
-    }
-
-    public void setPartId(int partId) {
-        this.partId = partId;
-    }
-
     public String getSourceLocation() {
         return sourceLocation;
     }
@@ -130,28 +114,20 @@ public class VideoPart implements Serializable {
         this.targetLocation = targetLocation;
     }
 
-    public MediaFormat getSourceFormat() {
-        return sourceFormat;
-    }
-
-    public void setSourceFormat(MediaFormat sourceFormat) {
-        this.sourceFormat = sourceFormat;
-    }
-
-    public MediaFormat getTargetFormat() {
-        return targetFormat;
-    }
-
-    public void setTargetFormat(MediaFormat targetFormat) {
-        this.targetFormat = targetFormat;
-    }
-
     public Video getVideo() {
         return video;
     }
 
     public void setVideo(Video video) {
         this.video = video;
+    }
+
+    public VideoPart getNextPart() {
+        return nextPart;
+    }
+
+    public void setNextPart(VideoPart nextPart) {
+        this.nextPart = nextPart;
     }
 
 }

@@ -34,8 +34,8 @@ public class GroupDao {
     private EntityManager entityManager;
 
     @Transactional
-    public void store(Group group) {
-        entityManager.merge(group);
+    public Group store(Group group) {
+        return entityManager.merge(group);
     }
 
     @Transactional
@@ -54,5 +54,20 @@ public class GroupDao {
     public List<Group> findAll() {
         Query query = entityManager.createQuery("SELECT g FROM Group g");
         return query.getResultList();
+    }
+
+    /**
+     * Finds the group with given name associated with the user.
+     * 
+     * @param userId the owner of the group
+     * @param allowedGroupName the group name
+     * @return
+     */
+    public Group findByUserAndName(Long userId, String groupName) {
+        Query query = entityManager.createQuery("SELECT g FROM Group g, User u " +
+                "WHERE u.id = :userId AND g.name = :groupName");
+        query.setParameter("userId", userId);
+        query.setParameter("groupName", groupName);
+        return (Group) query.getSingleResult();
     }
 }

@@ -16,7 +16,7 @@
 
 package com.moteve.dao;
 
-import com.moteve.domain.Authority;
+import com.moteve.domain.VideoPart;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -29,38 +29,31 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Radek Skokan
  */
 @Repository
-public class AuthorityDao {
+public class VideoPartDao {
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Transactional
-    public Authority store(Authority authority) {
-        return entityManager.merge(authority);
+    public VideoPart store(VideoPart videoPart) {
+        return entityManager.merge(videoPart);
     }
 
     @Transactional
-    public void delete(Long authorityId) {
-        Authority authority = entityManager.find(Authority.class, authorityId);
-        entityManager.remove(authority);
+    public void delete(Long videoPartId) {
+        VideoPart videoPart = entityManager.find(VideoPart.class, videoPartId);
+        entityManager.remove(videoPart);
     }
 
     @Transactional(readOnly = true)
-    public Authority findById(Long authorityId) {
-        return entityManager.find(Authority.class, authorityId);
+    public VideoPart findById(Long videoPartId) {
+        return entityManager.find(VideoPart.class, videoPartId);
     }
 
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<Authority> findAll() {
-        Query query = entityManager.createQuery("SELECT a FROM Authority a");
+    public List<VideoPart> findAll() {
+        Query query = entityManager.createQuery("SELECT vp FROM VideoPart vp");
         return query.getResultList();
-    }
-
-    @Transactional(readOnly=true)
-    public Authority findByName(String name) {
-        Query query = entityManager.createQuery("SELECT a FROM Authority a WHERE a.name = :name");
-        query.setParameter("name", name);
-        return  (Authority) query.getSingleResult();
     }
 }

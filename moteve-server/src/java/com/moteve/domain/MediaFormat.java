@@ -40,6 +40,12 @@ public class MediaFormat implements Serializable {
     @Column(name = "name", unique = true, nullable = false)
     private String name;
 
+    /**
+     * E.g. .3gp, .flv; added to uploaded/converted files for known formats
+     */
+    @Column(name = "file_suffix")
+    private String fileSuffix;
+
     public Long getId() {
         return id;
     }
@@ -55,4 +61,13 @@ public class MediaFormat implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String getFileSuffix() {
+        return fileSuffix;
+    }
+
+    public void setFileSuffix(String fileSuffix) {
+        this.fileSuffix = fileSuffix;
+    }
+    
 }

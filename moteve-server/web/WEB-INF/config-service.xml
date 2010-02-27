@@ -15,4 +15,7 @@
     <context:component-scan base-package="com.moteve.service" />
     <context:annotation-config />
 
+    <bean class="com.moteve.service.VideoService"
+        p:sourceVideoPath="c:/temp/video/source" />
+
 </beans>

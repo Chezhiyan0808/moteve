@@ -20,8 +20,11 @@ import com.moteve.domain.User;
 import com.moteve.service.UserService;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +51,15 @@ public class GroupController {
 
     @RequestMapping(value = "/group/manageGroups.htm", method = RequestMethod.GET)
     public ModelAndView displayGroups(HttpServletRequest request) {
-        return new ModelAndView("group/manageGroups", "groups", userService.getGroups(request.getRemoteUser()));
+        Set<Group> groups = new HashSet<Group>(userService.getGroups(request.getRemoteUser()));
+        // don't display the PUBLIC group
+        for (Iterator<Group> i = groups.iterator(); i.hasNext(); ) {
+            Group group = i.next();
+            if (Group.PUBLIC.equals(group.getName())) {
+                i.remove();
+            }
+        }
+        return new ModelAndView("group/manageGroups", "groups", groups);
     }
 
     @RequestMapping(value = "/group/createGroup.htm", method = RequestMethod.POST)

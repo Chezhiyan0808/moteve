@@ -10,7 +10,7 @@
         <form-login login-page="/login.jsp" authentication-failure-url="/login.jsp?error=true" />
         <logout logout-url="/logout.jsp" />
 
-        <intercept-url pattern="/video/upload.htm*" access="ROLE_ANONYMOUS,ROLE_MEMBER,ROLE_ADMIN" />
+        <intercept-url pattern="/mca/**" access="ROLE_ANONYMOUS,ROLE_MEMBER,ROLE_ADMIN" />
         <intercept-url pattern="/login.jsp*" access="ROLE_ANONYMOUS" />
         <intercept-url pattern="/logout.jsp*" access="ROLE_MEMBER,ROLE_ADMIN" />
         <intercept-url pattern="/register.htm" access="ROLE_ANONYMOUS" />
