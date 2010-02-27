@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,7 +19,6 @@ import android.widget.Spinner;
 public class Configurer extends Activity {
     
     private static final String TAG = "Moteve_Configurer";
-    public static Activity CONF_ACTIVITY;
     
     private Spinner videoPermissionsSpinner = null;
 
@@ -27,7 +27,6 @@ public class Configurer extends Activity {
 	super.onCreate(savedInstanceState);
 	setContentView(R.layout.config_basic);
 	final Context ctx = this;
-	CONF_ACTIVITY = this;
 	
 	Button connectionSettingsButton = (Button) findViewById(R.id.configConnection);
 	connectionSettingsButton.setOnClickListener(new View.OnClickListener() {
@@ -42,7 +41,10 @@ public class Configurer extends Activity {
 	okButton.setOnClickListener(new View.OnClickListener() {
 	    @Override
 	    public void onClick(View v) {
-		// TODO save the permissions
+		String defaultGroup = (String) videoPermissionsSpinner.getSelectedItem();
+		Editor editor = Main.getPrefs().edit();
+		editor.putString("defaultGroup", defaultGroup);
+		editor.commit();
 		finish();
 	    }
 	});
@@ -63,7 +65,7 @@ public class Configurer extends Activity {
      * @return names of the Groups the user has created on the server
      */
     private String[] getGroups() {
-	SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+	SharedPreferences prefs = Main.getPrefs();
 	String serverUrl = prefs.getString("serverUrl", null);
 	String token = prefs.getString("token", null);
 	if (serverUrl == null || serverUrl.length() == 0
