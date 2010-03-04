@@ -8,7 +8,7 @@ Member can choose: Videos (watch, list, manage), Groups (add, remove, manage mem
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="security" %>
 <security:authentication property="name" var="loggedUser" />
 <div id="main_menu">
-    <a href="<c:url value='/video/list.htm'/>">Videos</a>
+    <a href="<c:url value='/video/listVideos.htm'/>">Videos</a>
     <security:authorize ifAnyGranted="ROLE_MEMBER,ROLE_ADMIN">
         | <a href="<c:url value='/group/manageGroups.htm'/>">Groups</a> | <a href="<c:url value='/contact/listContacts.htm'/>">Contacts</a> | ${loggedUser} | <a href="<c:url value='/logout.jsp'/>">Logout</a>
     </security:authorize>

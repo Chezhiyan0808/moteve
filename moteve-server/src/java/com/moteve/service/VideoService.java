@@ -17,6 +17,7 @@ package com.moteve.service;
 
 import com.moteve.dao.GroupDao;
 import com.moteve.dao.MediaFormatDao;
+import com.moteve.dao.UserDao;
 import com.moteve.dao.VideoDao;
 import com.moteve.dao.VideoPartDao;
 import com.moteve.domain.Group;
@@ -31,8 +32,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.NoResultException;
 import org.apache.log4j.Logger;
@@ -65,6 +68,9 @@ public class VideoService {
 
     @Autowired
     private GroupDao groupDao;
+
+    @Autowired
+    private UserDao userDao;
 
     @Required
     public void setSourceVideoPath(String sourceVideoPath) {
@@ -219,5 +225,26 @@ public class VideoService {
                 + part.getVideo().getId();
         new File(dir).mkdirs();
         return dir + File.separator + part.getId() + part.getVideo().getSourceFormat().getFileSuffix();
+    }
+
+    /**
+     * Returns recently added videos that the user has permissions for.
+     * Admin can see all.
+     * @param count maximum number of the returned videos
+     * @param email identifies the user
+     * @return
+     */
+    public List<Video> getRecentVideos(int count, String email) {
+        try {
+            if (email == null) {
+                // anonymous user, display only PUBLIC videos
+                return videoDao.findRecentPublic(count);
+            } else {
+                return videoDao.findRecent(count, email);
+            }
+        } catch (NoResultException e) {
+            return new ArrayList<Video>();
+        }
+
     }
 }
