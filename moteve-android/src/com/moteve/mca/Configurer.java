@@ -54,10 +54,22 @@ public class Configurer extends Activity {
     }
 
     private void refreshPermissionGroups() {
+	String[] availableGroups = getGroups();
 	ArrayAdapter adapter = new ArrayAdapter(this,
 		android.R.layout.simple_spinner_item,
-		getGroups());
+		availableGroups);
 	videoPermissionsSpinner.setAdapter(adapter);
+	
+	// pre-select the default group
+	String defaultGroup = Main.getPrefs().getString("defaultGroup",
+	    "JUST_ME");
+	int position = 0;
+	for (; position < availableGroups.length; position++) {
+	    if (defaultGroup.equals(availableGroups[position])) {
+		break;
+	    }
+	}
+	videoPermissionsSpinner.setSelection(position);
     }
 
     /**
