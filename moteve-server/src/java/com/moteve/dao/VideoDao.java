@@ -72,20 +72,6 @@ public class VideoDao {
     @SuppressWarnings("unchecked")
     public List<Video> findRecentPublic(int count) {
         logger.debug("Getting recent " + count + " videos accessible for ANONYMOUS");
-
-        Query q = entityManager.createQuery("SELECT p FROM Video v, IN (v.permissions) p "
-                + "WHERE v.id = 114 ORDER BY v.creationDate DESC");
-        q.setMaxResults(count);
-        List<Role> perms = q.getResultList();
-        for (Role r : perms) {
-            logger.debug("Video role: " + r.getId() + ", " + r.getClass().getName());
-            if (r instanceof User) {
-                logger.debug("user: " + ((User) r).getEmail());
-            } else if (r instanceof Group) {
-                logger.debug("group: " + ((Group) r).getName());
-            }
-        }
-
         Query query = entityManager.createQuery("SELECT v FROM Video v, IN (v.permissions) p "
                 + "WHERE p.name = '" + Group.PUBLIC + "' ORDER BY v.creationDate DESC");
         query.setMaxResults(count);
