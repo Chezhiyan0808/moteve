@@ -181,6 +181,7 @@ public class McaController {
             String sequence = request.getHeader("Moteve-Sequence");
             logger.debug("sequence=" + sequence);
             if (sequence == null || sequence.length() == 0) {
+                logger.debug("Missing Moteve-Sequence parameter");
                 response.setHeader("Moteve-Sequence", "ERROR: Missing Moteve-Sequence parameter");
                 out.print("ERROR: Missing Moteve-Sequence parameter");
                 return;
@@ -188,6 +189,7 @@ public class McaController {
 
             User user = getUserFromToken(request);
             if (user == null) {
+                logger.debug("Token error");
                 response.setHeader("Moteve-Token", "ERROR: Token error");
                 out.print("ERROR: Token error");
                 return;
@@ -215,9 +217,11 @@ public class McaController {
                     response.setHeader("Moteve-Sequence", sequence + " closed");
                     out.print(sequence + " closed");
                 } catch (NumberFormatException e) {
+                    logger.debug("Wrong sequence number format");
                     response.setHeader("Moteve-Sequence", "ERROR: Wrong sequence number format");
                     out.print("ERROR: Wrong sequence number format");
                 } catch (MoteveException e) {
+                    logger.error(e);
                     response.setHeader("Moteve-Sequence", "ERROR: " + e.getMessage());
                     out.print("ERROR: " + e.getMessage());
                 }
@@ -230,9 +234,11 @@ public class McaController {
                     response.setHeader("Moteve-Sequence", "OK");
                     out.print("OK");
                 } catch (NumberFormatException e) {
+                    logger.debug("Wrong sequence number format");
                     response.setHeader("Moteve-Sequence", "ERROR: Wrong sequence number format");
                     out.print("ERROR: Wrong sequence number format");
                 } catch (Exception e) {
+                    logger.error(e);
                     response.setHeader("Moteve-Sequence", "ERROR: " + e.getMessage());
                     out.print("ERROR: " + e.getMessage());
                 }
