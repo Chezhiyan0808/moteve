@@ -6,29 +6,42 @@
     <head>
         <title>Moteve</title>
     </head>
-    <body>
+    <body onload="enableUserField()">
+        <script type="text/javascript">
+            function enableUserField()
+            {
+                if (document.criteriaForm.myVideos.checked) {
+                    document.criteriaForm.author.disabled=true;
+                } else {
+                    document.criteriaForm.author.disabled=false;
+                }
+            }
+        </script>
         <%@ include file="../menu.jsp" %>
         <h2>Videos</h2>
         <div>
             Search criteria
-            <form action="listVideos.htm" method="post">
+            <form name="criteriaForm" action="listVideos.htm" method="post">
                 <table>
                     <tr>
-                        <td>Video name:</td><td><input type="text" name="videoName"/></td>
+                        <td>Video name:</td><td><input type="text" name="videoName" value="${videoName}"/></td>
                     </tr>
                     <tr>
                         <td>
-                            Author:</td><td><input type="text" name="author" alt="Author's email or display name"/>
+                            Author:</td><td><input type="text" name="author" value="${author}" alt="Author's email or display name"/>
                             <security:authorize ifAnyGranted="ROLE_MEMBER,ROLE_ADMIN">
-                                Only my videos <input type="checkbox" name="myVideos" />
+                                Only my videos <input type="checkbox" name="myVideos" <c:if test="${myVideos}">checked="true"</c:if> onchange="enableUserField()" />
                             </security:authorize>
                         </td>
                     </tr>
                     <tr>
-                        <td>Date from:</td><td><input type="text" name="dateFrom"/> to: <input type="text" name="dateTo"/></td>
+                        <td>
+                            Date from:</td><td><input type="text" name="dateFrom" value="${dateFrom}"/>
+                            to: <input type="text" name="dateTo" value="${dateTo}"/> (e.g. 2010-03-21)
+                        </td>
                     </tr>
                     <tr>
-                        <td>Live</td><td><input type="checkbox" name="live" alt="Videos being streamed just now"/></td>
+                        <td>Live</td><td><input type="checkbox" name="live" <c:if test="${live}">checked="true"</c:if>alt="Videos being streamed just now"/></td>
                     </tr>
                     <tr>
                         <td colspan="2"><input type="submit" value="Find videos"/></td>

@@ -16,9 +16,8 @@
 package com.moteve.dao;
 
 import com.moteve.domain.Group;
-import com.moteve.domain.Role;
-import com.moteve.domain.User;
 import com.moteve.domain.Video;
+import com.moteve.domain.VideoSearchCriteria;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -94,31 +93,52 @@ public class VideoDao {
      */
     @SuppressWarnings("unchecked")
     public List<Video> findRecent(int count, String email) {
-        logger.debug("Getting recent " + count + " videos for accessible for " + email);
-        String userGroups = findGroupsForUser(email);
-        String queryString;
-        if (userGroups == null || userGroups.length() == 0) {
-                queryString = "SELECT v FROM Video v, IN (v.permissions) p "
-                + "WHERE p.name = '" + Group.PUBLIC + "' "
-                + "OR v.author.email = :email "
-                + "OR p.email = :email "
-                + "ORDER BY v.creationDate DESC";
-        } else {
-            queryString = "SELECT v FROM Video v, IN (v.permissions) p "
-                + "WHERE p.name = '" + Group.PUBLIC + "' "
-                + "OR v.author.email = :email "
-                + "OR p.email = :email "
-                + "OR p.name IN (" + userGroups + ") "
-                + "ORDER BY v.creationDate DESC";
-        }
-        logger.debug("findRecent(" + count + ", " + email + ") queryString: " + queryString);
+        logger.debug("Getting recent " + count + " videos accessible for " + email);
+        String queryString = "SELECT v FROM Video v, IN (v.permissions) p "
+                + "WHERE " + buildVideoRestrictionClause(email) + "ORDER BY v.creationDate DESC";
+        logger.debug("findRecent(" + count + ", " + email + ") query: " + queryString);
         Query query = entityManager.createQuery(queryString);
-        query.setParameter("email", email);
         query.setMaxResults(count);
         return query.getResultList();
     }
 
+    /**
+     * Builds the WHERE part of the SELECT command that restricts selected videos
+     * to those the user has permissions for.
+     * @param email identifies the user; if null, only PUBLIC videos are returned
+     * @return the WHERE part of the SELECT clause, without the WHERE keyword; only the condition itself
+     */
+    private String buildVideoRestrictionClause(String email) {
+        String clause;
+
+        if (email == null) {
+            clause = "(p.name = '" + Group.PUBLIC + "') ";
+        } else {
+            
+            String userGroups = findGroupsForUser(email);
+            if (userGroups == null || userGroups.length() == 0) {
+                clause = "(p.name = '" + Group.PUBLIC + "' "
+                        + "OR v.author.email = '" + email + "' "
+                        + "OR p.email = '" + email + "') ";
+            } else {
+                clause = "(p.name = '" + Group.PUBLIC + "' "
+                        + "OR v.author.email = '" + email + "' "
+                        + "OR p.email = '" + email + "' "
+                        + "OR p.name IN (" + userGroups + ")) ";
+            }
+        }
+        logger.debug("Built video permissions-restriction clause: " + clause);
+        return clause;
+    }
+
+    /**
+     * Return groups that the user is member of.
+     * @param email
+     * @return group names separated with ", " that the user is member of
+     */
     private String findGroupsForUser(String email) {
+        // TODO: slow. Use e.g. a stored procedure or when the membership and
+        // group hierarchy changes, update a dedicated DB fields
         StringBuilder groupNames = new StringBuilder();
         List<Group> groups = null;
         // get groups that directly contain the user
@@ -161,5 +181,52 @@ public class VideoDao {
         groupNames.setLength(groupNames.length() - ", ".length()); // remove the tailing ", "
         logger.debug("Group search finished. User " + email + " is a member of: [" + groupNames + "]");
         return groupNames.toString();
+    }
+
+    /**
+     * Finds all videos matching the criteria. Returned are only the videos that
+     * the calling user has permissions for.
+     * @param email identifies the user calling this operation; if null, only PUBLIC videos are returned
+     * @param criteria the video search criteria
+     * @return
+     */
+    public List<Video> findByCriteria(String email, VideoSearchCriteria criteria) {
+        StringBuilder queryString = new StringBuilder();
+
+        // build the criteria-part query
+        queryString.append("SELECT v FROM Video v, IN (v.permissions) p WHERE ");
+        if (criteria.getAuthorEmail() != null && criteria.getAuthorEmail().length() > 0) {
+            queryString.append("v.author.email = '" + criteria.getAuthorEmail() + "' AND ");
+        } else if (criteria.getAuthorPattern() != null && criteria.getAuthorPattern().length() > 0) {
+            // if the exact author's email is specified, this pattern is ignored
+            queryString.append("(UPPER(v.author.email) LIKE '%" + criteria.getAuthorPattern().toUpperCase() + "%' "
+                    + "OR UPPER(v.author.displayName) LIKE '%" + criteria.getAuthorPattern().toUpperCase() + "%') AND ");
+        }
+        if (criteria.getVideoNamePattern() != null && criteria.getVideoNamePattern().length() > 0) {
+            queryString.append("UPPER(v.name) LIKE '%" + criteria.getVideoNamePattern().toUpperCase() + "%' AND ");
+        }
+        if (criteria.getDateFrom() != null) {
+            queryString.append("v.creationDate >= :dateFrom AND ");
+        }
+        if (criteria.getDateTo() != null) {
+            queryString.append("v.creationDate <= :dateTo AND ");
+        }
+        if (criteria.isLive()) {
+            queryString.append("v.recordInProgress = TRUE AND ");
+        }
+        logger.debug("Video search criteria, criteria query part: " + queryString.toString());
+
+        // add the permissions-restriction query part
+        queryString.append(buildVideoRestrictionClause(email));
+        logger.debug("findByCriteria query: " + queryString);
+
+        Query query = entityManager.createQuery(queryString.toString());
+        if (criteria.getDateFrom() != null) {
+            query.setParameter("dateFrom", criteria.getDateFrom());
+        }
+        if (criteria.getDateTo() != null) {
+            query.setParameter("dateTo", criteria.getDateTo());
+        }
+        return query.getResultList();
     }
 }

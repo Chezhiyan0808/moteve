@@ -28,6 +28,7 @@ import com.moteve.domain.UnknownMediaFormatException;
 import com.moteve.domain.User;
 import com.moteve.domain.Video;
 import com.moteve.domain.VideoPart;
+import com.moteve.domain.VideoSearchCriteria;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -41,7 +42,6 @@ import javax.persistence.NoResultException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -246,5 +246,20 @@ public class VideoService {
             return new ArrayList<Video>();
         }
 
+    }
+
+    /**
+     * Returns list of videos mathing the search criteria. The returned videos
+     * are accessible to the calling user.
+     * @param email identifies the calling user
+     * @param criteria
+     * @return videos mathing the criterias and accesss permissions
+     */
+    public List<Video> findVideos(String email, VideoSearchCriteria criteria) {
+        try {
+            return videoDao.findByCriteria(email, criteria);
+        } catch (NoResultException e) {
+            return new ArrayList<Video>();
+        }
     }
 }
