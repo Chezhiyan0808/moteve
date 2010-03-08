@@ -130,4 +130,9 @@ public class VideoPart implements Serializable {
         this.nextPart = nextPart;
     }
 
+    @Override
+    public String toString() {
+        return "(VideoPart ID=" + id + ")";
+    }
+
 }

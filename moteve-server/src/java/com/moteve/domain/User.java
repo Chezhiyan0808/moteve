@@ -151,4 +151,9 @@ public class User extends Role implements Serializable {
         this.devices = devices;
     }
 
+    @Override
+    public String toString() {
+        return "(User ID=" + getId() + ", email=" + email + ")";
+    }
+
 }

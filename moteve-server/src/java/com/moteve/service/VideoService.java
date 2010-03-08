@@ -130,6 +130,8 @@ public class VideoService {
         allowedRoles.add(group);
         video.setPermissions(allowedRoles);
         video.setRecordInProgress(true);
+        video.setRemoved(false);
+        video.setMarkedForRemoval(false);
         video = videoDao.store(video);
         return video;
     }
@@ -260,6 +262,146 @@ public class VideoService {
             return videoDao.findByCriteria(email, criteria);
         } catch (NoResultException e) {
             return new ArrayList<Video>();
+        }
+    }
+
+    public Video getVideo(Long videoId) {
+        try {
+            return videoDao.findById(videoId);
+        } catch (NoResultException e) {
+            logger.error(e);
+            return null;
+        }
+    }
+
+    /**
+     * Finds contacts available for the given user and video. The result are
+     * contacts that the user has and are not already associated with the specified video.
+     * @param email identifies the user
+     * @param videoId identifies the video
+     * @return
+     */
+    public List<User> getAvailableContacts(String email, Long videoId) {
+        if (email == null || videoId == null) {
+            return new ArrayList<User>();
+        }
+
+        try {
+            return videoDao.findAvailableVideoContacts(email, videoId);
+        } catch (NoResultException e) {
+            return new ArrayList<User>();
+        }
+    }
+
+    /**
+     * Returns user's contacts associated with a video.
+     * @param email identifies the user
+     * @param videoId identifies the video
+     * @return
+     */
+    public List<User> getVideoContacts(String email, Long videoId) {
+        if (email == null || videoId == null) {
+            return new ArrayList<User>();
+        }
+
+        try {
+            return videoDao.findVideoContacts(videoId);
+        } catch (NoResultException e) {
+            return new ArrayList<User>();
+        }
+    }
+
+    /**
+     * Finds groups available for the given user and video. The result are
+     * groups that the user has and are not already associated with the specified video.
+     * @param email identifies the user
+     * @param videoId identifies the video
+     * @return
+     */
+    public List<Group> getAvailableGroups(String email, Long videoId) {
+        if (email == null || videoId == null) {
+            return new ArrayList<Group>();
+        }
+
+        try {
+            return videoDao.findAvailableVideoGroups(email, videoId);
+        } catch (NoResultException e) {
+            return new ArrayList<Group>();
+        }
+    }
+
+    /**
+     * Returns user's groups associated with a video.
+     * @param email identifies the user
+     * @param videoId identifies the video
+     * @return
+     */
+    public List<Group> getVideoGroups(String email, Long videoId) {
+        if (email == null || videoId == null) {
+            return new ArrayList<Group>();
+        }
+
+        try {
+            return videoDao.findVideoGroups(videoId);
+        } catch (NoResultException e) {
+            return new ArrayList<Group>();
+        }
+    }
+
+    /**
+     * Update the video name and access permissions
+     * @param email the user performing the video update. Must be the video author
+     * @param videoId
+     * @param videoName new video name
+     * @param videoContactIds list of contact IDs (users) that are allowed to watch the video
+     * @param videoGroupIds list of new group IDs that are allowed to watch the video
+     */
+    public void updateVideo(String email, Long videoId, String videoName, List<Long> videoContactIds, List<Long> videoGroupIds) {
+        try {
+            Video video = videoDao.findById(videoId);
+            if (!video.getAuthor().getEmail().equals(email)) {
+                logger.error("Error updating video. User " + email + " is not the author of video ID=" + videoId);
+                return;
+            }
+
+            video.setName(videoName);
+
+            Set<Role> newPermissions = new HashSet<Role>();
+            if (videoContactIds != null) {
+                for (Long contactId : videoContactIds) {
+                    User contact = userDao.findById(contactId);
+                    newPermissions.add(contact);
+                }
+            }
+            if (videoGroupIds != null) {
+                for (Long groupId : videoGroupIds) {
+                    Group group = groupDao.findById(groupId);
+                    newPermissions.add(group);
+                }
+            }
+            video.setPermissions(newPermissions);
+            video = videoDao.store(video);
+            logger.info("Update video ID=" + videoId + ": name=" + video.getName() + ", permissions=" + video.getPermissions());
+        } catch (NoResultException e) {
+            logger.error("Error updating video", e);
+        }
+    }
+
+    /**
+     * Mark the video for removal
+     * @param email must be the video's author
+     * @param videoId
+     */
+    public void markForRemoval(String email, Long videoId) {
+        try {
+            Video video = videoDao.findById(videoId);
+            if (video.getAuthor().getEmail().equals(email)) {
+                video.setMarkedForRemoval(true);
+                videoDao.store(video);
+                logger.info("Video ID=" + videoId + " has been marked for removal");
+            }
+        } catch (NoResultException e) {
+            logger.error("Error marking video for removal", e);
         }
     }
 }

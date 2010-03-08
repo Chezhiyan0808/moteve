@@ -59,4 +59,9 @@ public class Authority implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public String toString() {
+        return "(Authority ID=" + id + ", name=" + name + ")";
+    }
 }

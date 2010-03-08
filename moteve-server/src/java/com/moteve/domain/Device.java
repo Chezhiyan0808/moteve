@@ -105,4 +105,9 @@ public class Device implements Serializable {
         this.user = user;
     }
 
+    @Override
+    public String toString() {
+        return "(Device ID=" + id + ", description=" + description + ")";
+    }
+
 }

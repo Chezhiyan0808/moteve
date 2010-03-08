@@ -69,5 +69,10 @@ public class MediaFormat implements Serializable {
     public void setFileSuffix(String fileSuffix) {
         this.fileSuffix = fileSuffix;
     }
-    
+
+    @Override
+    public String toString() {
+        return "(MediaFormat ID=" + id + ", name=" + name + ")";
+    }
+
 }

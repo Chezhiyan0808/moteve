@@ -57,6 +57,7 @@ public class MediaFormatDao {
         return query.getResultList();
     }
 
+    @Transactional(readOnly = true)
     public MediaFormat findByName(String name) {
         Query query = entityManager.createQuery("SELECT mf FROM MediaFormat mf WHERE mf.name = :name");
         query.setParameter("name", name);

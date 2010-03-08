@@ -85,6 +85,22 @@ public class Video implements Serializable {
     @OneToOne
     private VideoPart lastPart;
 
+    /**
+     * Indicates whether the video has been removed. When a video is removed,
+     * only its video parts are removed and the video entry remains.
+     * The video remove functionality is executed by Admin on videos
+     * marked for removal.
+     */
+    @Column(name="removed")
+    private boolean removed;
+
+    /**
+     * Indicates whether the video files and VideParts were marked as deleted by the
+     * video author, i.e. to be deleted by Admin.
+     */
+    @Column(name="marked_for_removal")
+    private boolean markedForRemoval;
+
     public User getAuthor() {
         return author;
     }
@@ -181,4 +197,24 @@ public class Video implements Serializable {
         this.lastPart = lastPart;
     }
 
+    public boolean isRemoved() {
+        return removed;
+    }
+
+    public void setRemoved(boolean removed) {
+        this.removed = removed;
+    }
+
+    public boolean isMarkedForRemoval() {
+        return markedForRemoval;
+    }
+
+    public void setMarkedForRemoval(boolean markedForRemoval) {
+        this.markedForRemoval = markedForRemoval;
+    }
+
+    @Override
+    public String toString() {
+        return "(Video ID=" + id + ", name=" + name + ")";
+    }
 }

@@ -75,4 +75,10 @@ public class Group extends Role implements Serializable {
     public void setUser(User user) {
         this.user = user;
     }
+
+    @Override
+    public String toString() {
+        return "(Group ID=" + getId() + ", name=" + name + ")";
+    }
+
 }

@@ -92,7 +92,6 @@
                         <br />
                         <input type="button" value="&lt;--" onclick="moveOptions(this.form.groupMembers, this.form.availableContacts);" />
                     </td>
-
                     <td>
                         <select id="groupMembers" name="groupMembers" multiple="true">
                             <c:forEach items="${requestScope.groupMembers}" var="groupMember">

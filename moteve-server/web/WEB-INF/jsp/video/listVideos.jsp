@@ -62,12 +62,12 @@
                 </tr>
                 <c:forEach var="video" items="${requestScope.videos}">
                     <tr>
-                        <td>${video.id}</td>
+                        <td><a href="watchVideo?id=${video.id}">${video.id}</a></td>
                         <td>${video.name}</td>
                         <td>${video.author.email}</td>
                         <td><fmt:formatDate value="${video.creationDate}" pattern="yyyy-MM-dd hh:mm:ss" /></td>
                         <td><input type="checkbox" <c:if test="${video.recordInProgress == true}">checked="true"</c:if> disabled="true" /></td>
-                        <td><c:if test="${video.author.email == currentUserEmail}">Edit</c:if>&nbsp;</td>
+                        <td><c:if test="${video.author.email == currentUserEmail}"><a href="editVideo.htm?id=${video.id}">Edit</a></c:if>&nbsp;</td>
                     </tr>
                 </c:forEach>
             </table>

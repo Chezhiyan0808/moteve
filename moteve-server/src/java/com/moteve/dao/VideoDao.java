@@ -16,6 +16,7 @@
 package com.moteve.dao;
 
 import com.moteve.domain.Group;
+import com.moteve.domain.User;
 import com.moteve.domain.Video;
 import com.moteve.domain.VideoSearchCriteria;
 import java.util.List;
@@ -55,24 +56,20 @@ public class VideoDao {
         return entityManager.find(Video.class, videoId);
     }
 
-    @Transactional(readOnly = true)
-    @SuppressWarnings("unchecked")
-    public List<Video> findAll() {
-        Query query = entityManager.createQuery("SELECT v FROM Video v");
-        return query.getResultList();
-    }
-
     /**
      * Returns recent <code>count</count> videos that have PUBLIC
      * access permissions.
+     * Does not include videos removed or marked for removal.
      * @param count limits the number of returned videos
      * @return
      */
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Video> findRecentPublic(int count) {
         logger.debug("Getting recent " + count + " videos accessible for ANONYMOUS");
-        Query query = entityManager.createQuery("SELECT v FROM Video v, IN (v.permissions) p "
-                + "WHERE p.name = '" + Group.PUBLIC + "' ORDER BY v.creationDate DESC");
+        Query query = entityManager.createQuery("SELECT DISTINCT v FROM Video v, IN (v.permissions) p "
+                + "WHERE p.name = '" + Group.PUBLIC + "' " +
+                "AND v.markedForRemoval <> TRUE AND v.removed <> TRUE ORDER BY v.creationDate DESC");
         query.setMaxResults(count);
         return query.getResultList();
     }
@@ -87,15 +84,18 @@ public class VideoDao {
      * <li>member of one of the groups associated to the video permissions;
      *      the groups can be nested in several levels</li>
      * </ul>
+     * Does not include videos removed or marked for removal.
      * @param count limits the number of returned videos
      * @param email identifies the user
      * @return
      */
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Video> findRecent(int count, String email) {
         logger.debug("Getting recent " + count + " videos accessible for " + email);
-        String queryString = "SELECT v FROM Video v, IN (v.permissions) p "
-                + "WHERE " + buildVideoRestrictionClause(email) + "ORDER BY v.creationDate DESC";
+        String queryString = "SELECT DISTINCT v FROM Video v, IN (v.permissions) p "
+                + "WHERE " + buildVideoRestrictionClause(email) + " " +
+                "AND v.markedForRemoval <> TRUE AND v.removed <> TRUE ORDER BY v.creationDate DESC";
         logger.debug("findRecent(" + count + ", " + email + ") query: " + queryString);
         Query query = entityManager.createQuery(queryString);
         query.setMaxResults(count);
@@ -136,6 +136,8 @@ public class VideoDao {
      * @param email
      * @return group names separated with ", " that the user is member of
      */
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
     private String findGroupsForUser(String email) {
         // TODO: slow. Use e.g. a stored procedure or when the membership and
         // group hierarchy changes, update a dedicated DB fields
@@ -186,15 +188,19 @@ public class VideoDao {
     /**
      * Finds all videos matching the criteria. Returned are only the videos that
      * the calling user has permissions for.
+     * Does not include videos removed or marked for removal.
      * @param email identifies the user calling this operation; if null, only PUBLIC videos are returned
      * @param criteria the video search criteria
      * @return
      */
+    @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
     public List<Video> findByCriteria(String email, VideoSearchCriteria criteria) {
         StringBuilder queryString = new StringBuilder();
 
         // build the criteria-part query
-        queryString.append("SELECT v FROM Video v, IN (v.permissions) p WHERE ");
+        queryString.append("SELECT DISTINCT v FROM Video v, IN (v.permissions) p " +
+                "WHERE v.markedForRemoval <> TRUE AND v.removed <> TRUE AND ");
         if (criteria.getAuthorEmail() != null && criteria.getAuthorEmail().length() > 0) {
             queryString.append("v.author.email = '" + criteria.getAuthorEmail() + "' AND ");
         } else if (criteria.getAuthorPattern() != null && criteria.getAuthorPattern().length() > 0) {
@@ -229,4 +235,68 @@ public class VideoDao {
         }
         return query.getResultList();
     }
+
+    /**
+     * Finds permission contacts available for the given user and video. The result are
+     * contacts that the user has and are not already associated with the specified video.
+     * @param email idenifies the user
+     * @param videoId identifies the video
+     * @return
+     */
+    @Transactional(readOnly=true)
+    @SuppressWarnings("unchecked")
+    public List<User> findAvailableVideoContacts(String email, Long videoId) {
+        Query query = entityManager.createQuery("SELECT c FROM User u, IN (u.contacts) c " +
+                "WHERE u.email = :email AND NOT EXISTS " +
+                "(SELECT p FROM Video v, IN (v.permissions) p WHERE v.id = :videoId AND c.id = p.id)");
+        query.setParameter("email", email);
+        query.setParameter("videoId", videoId);
+        return query.getResultList();
+    }
+
+    /**
+     * Finds contacts associated with the specified video.
+     * @param videoId
+     * @return
+     */
+    @Transactional(readOnly=true)
+    @SuppressWarnings("unchecked")
+    public List<User> findVideoContacts(Long videoId) {
+        Query query = entityManager.createQuery("SELECT p FROM Video v, IN (v.permissions) p " +
+                "WHERE v.id = :videoId AND p.email IS NOT NULL");
+        query.setParameter("videoId", videoId);
+        return query.getResultList();
+    }
+
+    /**
+     * Finds permission groups available for the given user and video. The result are
+     * groups that the user has and are not already associated with the specified video.
+     * @param email idenifies the user
+     * @param videoId identifies the video
+     * @return
+     */
+    @Transactional(readOnly=true)
+    @SuppressWarnings("unchecked")
+    public List<Group> findAvailableVideoGroups(String email, Long videoId) {
+        Query query = entityManager.createQuery("SELECT g FROM User u, IN (u.groups) g " +
+                "WHERE u.email = :email AND NOT EXISTS " +
+                "(SELECT p FROM Video v, IN (v.permissions) p WHERE v.id = :videoId AND g.id = p.id)");
+        query.setParameter("email", email);
+        query.setParameter("videoId", videoId);
+        return query.getResultList();
+    }
+
+    /**
+     * Finds the video athor's groups associated with the specified video.
+     * @param videoId
+     * @return
+     */
+    @Transactional(readOnly=true)
+    @SuppressWarnings("unchecked")
+    public List<Group> findVideoGroups(Long videoId) {
+        Query query = entityManager.createQuery("SELECT p FROM Video v, IN (v.permissions) p WHERE v.id = :videoId AND p.email IS NULL");
+        query.setParameter("videoId", videoId);
+        return query.getResultList();
+    }
+
 }
