@@ -76,9 +76,6 @@ public class Video implements Serializable {
     @ManyToOne
     private MediaFormat sourceFormat;
 
-    @ManyToOne
-    private MediaFormat targetFormat;
-
     @OneToOne
     private VideoPart firstPart;
 
@@ -171,14 +168,6 @@ public class Video implements Serializable {
 
     public void setSourceFormat(MediaFormat sourceFormat) {
         this.sourceFormat = sourceFormat;
-    }
-
-    public MediaFormat getTargetFormat() {
-        return targetFormat;
-    }
-
-    public void setTargetFormat(MediaFormat targetFormat) {
-        this.targetFormat = targetFormat;
     }
 
     public VideoPart getFirstPart() {

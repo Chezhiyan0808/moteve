@@ -44,6 +44,9 @@ public class SystemInitializer {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private TranscodingService transcodingService;
     
     private static final Logger logger = Logger.getLogger(SystemInitializer.class);
 
@@ -53,6 +56,7 @@ public class SystemInitializer {
         logger.info("Initializing Moteve system database");
         checkAuthorities();
         checkAdminUser();
+        transcodingService.work();
     }
 
     private void checkAuthorities() {

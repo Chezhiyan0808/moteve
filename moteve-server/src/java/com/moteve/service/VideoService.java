@@ -57,6 +57,10 @@ public class VideoService {
 
     private String sourceVideoPath;
 
+    private String destVideoPath;
+
+    private String destFileSuffix;
+
     @Autowired
     private VideoDao videoDao;
 
@@ -72,9 +76,22 @@ public class VideoService {
     @Autowired
     private UserDao userDao;
 
+    @Autowired
+    private TranscodingService transcodingService;
+
     @Required
     public void setSourceVideoPath(String sourceVideoPath) {
         this.sourceVideoPath = sourceVideoPath;
+    }
+
+    @Required
+    public void setDestVideoPath(String destVideoPath) {
+        this.destVideoPath = destVideoPath;
+    }
+
+    @Required
+    public void setDestFileSuffix(String destFileSuffix) {
+        this.destFileSuffix = destFileSuffix;
     }
 
     /**
@@ -183,6 +200,8 @@ public class VideoService {
             part.setVideo(video);
             part = videoPartDao.store(part); // save to obtain ID
             part.setSourceLocation(prepareSrcVideoFilePath(part)); // ID needed here
+            part.setTargetLocation(prepareDestVideoFilePath(part));
+            part.setTranscodingFailed(false);
             videoPartDao.store(part); // update the part's source location
 
             // update link references
@@ -206,6 +225,8 @@ public class VideoService {
                 fos.write(buffer, 0, bytesRead);
             }
             logger.info("Bytes written: " + totalSize + ". Total file (" + f.getAbsolutePath() + ") size=" + f.length() + " bytes");
+
+            transcodingService.work();
         } catch (Exception e) {
             logger.error("Error adding video part", e);
             throw new MoteveException("Error adding video part: " + e.getMessage(), e);
@@ -227,6 +248,14 @@ public class VideoService {
                 + part.getVideo().getId();
         new File(dir).mkdirs();
         return dir + File.separator + part.getId() + part.getVideo().getSourceFormat().getFileSuffix();
+    }
+
+    private String prepareDestVideoFilePath(VideoPart part) {
+        String dir = destVideoPath + File.separator
+                + part.getVideo().getAuthor().getId() + File.separator
+                + part.getVideo().getId();
+        new File(dir).mkdirs();
+        return dir + File.separator + part.getId() + destFileSuffix;
     }
 
     /**

@@ -56,4 +56,19 @@ public class VideoPartDao {
         Query query = entityManager.createQuery("SELECT vp FROM VideoPart vp");
         return query.getResultList();
     }
+
+    /**
+     * 
+     * @return the oldest available video part that was not yet transcoded
+     * (conversionStart = null and conversionEnd = null and transcodingFailed <> true).
+     */
+    @Transactional(readOnly = true)
+    public VideoPart findNextForTranscoding() {
+        Query query = entityManager.createQuery("SELECT vp FROM VideoPart vp " +
+                "WHERE vp.conversionStart IS NULL AND vp.conversionEnd IS NULL " +
+                "AND vp.transcodingFailed <> TRUE " +
+                "ORDER BY vp.captureTime DESC");
+        query.setMaxResults(1);
+        return (VideoPart) query.getSingleResult();
+    }
 }

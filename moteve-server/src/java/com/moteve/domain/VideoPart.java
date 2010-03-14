@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.domain;
 
 import java.io.Serializable;
@@ -36,7 +35,7 @@ import javax.persistence.Temporal;
  * @author Radek Skokan
  */
 @Entity
-@Table(name="video_part")
+@Table(name = "video_part")
 public class VideoPart implements Serializable {
 
     @Id
@@ -44,27 +43,30 @@ public class VideoPart implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name="capture_time", nullable=false)
+    @Column(name = "capture_time", nullable = false)
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date captureTime;
 
-    @Column(name="conversion_start")
+    @Column(name = "conversion_start")
     private Timestamp conversionStart;
 
-    @Column(name="conversion_end")
+    @Column(name = "conversion_end")
     private Timestamp conversionEnd;
 
-    @Column(name="source_location")
+    @Column(name = "source_location")
     private String sourceLocation;
 
-    @Column(name="target_location")
+    @Column(name = "target_location")
     private String targetLocation;
 
-    @ManyToOne(cascade=CascadeType.REMOVE)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     private Video video;
 
     @OneToOne
     private VideoPart nextPart;
+
+    @Column(name = "transcoding_failed", nullable = false)
+    private boolean transcodingFailed;
 
     public Date getCaptureTime() {
         return captureTime;
@@ -130,9 +132,16 @@ public class VideoPart implements Serializable {
         this.nextPart = nextPart;
     }
 
+    public boolean isTranscodingFailed() {
+        return transcodingFailed;
+    }
+
+    public void setTranscodingFailed(boolean transcodingFailed) {
+        this.transcodingFailed = transcodingFailed;
+    }
+
     @Override
     public String toString() {
         return "(VideoPart ID=" + id + ")";
     }
-
 }
