@@ -17,9 +17,9 @@ import android.widget.Button;
 import android.widget.Spinner;
 
 public class Configurer extends Activity {
-    
+
     private static final String TAG = "Moteve_Configurer";
-    
+
     private Spinner videoPermissionsSpinner = null;
 
     @Override
@@ -27,7 +27,7 @@ public class Configurer extends Activity {
 	super.onCreate(savedInstanceState);
 	setContentView(R.layout.config_basic);
 	final Context ctx = this;
-	
+
 	Button connectionSettingsButton = (Button) findViewById(R.id.configConnection);
 	connectionSettingsButton.setOnClickListener(new View.OnClickListener() {
 	    @Override
@@ -36,19 +36,20 @@ public class Configurer extends Activity {
 		startActivity(intent);
 	    }
 	});
-	
+
 	Button okButton = (Button) findViewById(R.id.saveConfig);
 	okButton.setOnClickListener(new View.OnClickListener() {
 	    @Override
 	    public void onClick(View v) {
-		String defaultGroup = (String) videoPermissionsSpinner.getSelectedItem();
+		String defaultGroup = (String) videoPermissionsSpinner
+			.getSelectedItem();
 		Editor editor = Main.getPrefs().edit();
 		editor.putString("defaultGroup", defaultGroup);
 		editor.commit();
 		finish();
 	    }
 	});
-	
+
 	videoPermissionsSpinner = (Spinner) findViewById(R.id.videoPermissionsSpinner);
 	refreshPermissionGroups();
     }
@@ -59,16 +60,17 @@ public class Configurer extends Activity {
 		android.R.layout.simple_spinner_item,
 		availableGroups);
 	videoPermissionsSpinner.setAdapter(adapter);
-	
+
 	// pre-select the default group
 	String defaultGroup = Main.getPrefs().getString("defaultGroup",
-	    "JUST_ME");
-	int position = 0;
-	for (; position < availableGroups.length; position++) {
+		"JUST_ME");
+	int position = -1;
+	do {
+	    position++;
 	    if (defaultGroup.equals(availableGroups[position])) {
 		break;
 	    }
-	}
+	} while (position < availableGroups.length - 1);
 	videoPermissionsSpinner.setSelection(position);
     }
 
@@ -82,18 +84,17 @@ public class Configurer extends Activity {
 	String token = prefs.getString("token", null);
 	if (serverUrl == null || serverUrl.length() == 0
 		|| token == null || token.length() == 0) {
-	    return new String[] {"Connection not configured"};
+	    return new String[] { "Connection not configured" };
 	}
-	
-	
+
 	try {
 	    return retrieveGroups(serverUrl, token);
 	} catch (IOException e) {
 	    Log.e(TAG, "Error retrieving group names", e);
-	    return new String[] {"Error connecting to server"};
+	    return new String[] { "Error connecting to server" };
 	}
     }
-    
+
     private String[] retrieveGroups(String serverUrl, String token)
 	    throws IOException {
 	String groupsUrl = serverUrl + "/mca/listGroups.htm";
@@ -111,7 +112,8 @@ public class Configurer extends Activity {
 	Log.i(TAG, "Obtained group names='" + groupsNames + "'");
 	conn.disconnect();
 
-	return groupsNames.split("\\\\"); // just one backslash: escaped for java & for regexp
+	return groupsNames.split("\\\\"); // just one backslash: escaped for
+	// java & for regexp
     }
 
     @Override
@@ -119,7 +121,5 @@ public class Configurer extends Activity {
 	super.onResume();
 	refreshPermissionGroups();
     }
-    
-    
 
 }
