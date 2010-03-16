@@ -7,6 +7,8 @@ import java.net.HttpURLConnection;
 public class ConnectionUtils {
     
     public static String receiveResponse(HttpURLConnection conn) throws IOException {
+	conn.setConnectTimeout(10000);
+	conn.setReadTimeout(10000);
 	// retrieve the response from server
 	InputStream is = null;
 	try {
