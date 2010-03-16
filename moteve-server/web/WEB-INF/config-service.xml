@@ -16,8 +16,8 @@
     <context:annotation-config />
 
     <bean class="com.moteve.service.VideoService"
-          p:sourceVideoPath="c:/temp/video/source"
-          p:destVideoPath="c:/temp/video/out"
+          p:sourceVideoPath="/var/mtvideo/source"
+          p:destVideoPath="/var/mtvideo/out"
           p:destFileSuffix=".flv" />
 
     <bean class="com.moteve.service.TranscodingService"
@@ -25,8 +25,8 @@
         <property name="formatConvertors">
             <map>
                 <!-- use SOURCE and TARGET for the video files location; it will be replaced by the actual video -->
-                <!--<entry key="3GPP-H.263-AMR_NB" value="/usr/local/bin/ffmpeg -i SOURCE -ar 22050 -b 500 -s 320x240 TARGET" />-->
-                <entry key="3GPP-H.263-AMR_NB" value="c:\\temp\\fakeTranscoder.bat SOURCE TARGET" />
+                <entry key="3GPP-H.263-AMR_NB" value="/usr/local/bin/ffmpeg -i SOURCE -ar 8000 -b 260000 -s 320x240 TARGET" />
+                <!--<entry key="3GPP-H.263-AMR_NB" value="c:\\temp\\fakeTranscoder.bat SOURCE TARGET" />-->
             </map>
         </property>
     </bean>

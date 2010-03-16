@@ -23,6 +23,7 @@ import com.moteve.service.UserService;
 import com.moteve.service.VideoService;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
@@ -172,6 +173,10 @@ public class McaController {
      */
     @RequestMapping(value = "/mca/upload.htm", method = RequestMethod.POST)
     public void uploadVideo(HttpServletRequest request, HttpServletResponse response) {
+        if (logger.isDebugEnabled()) {
+            printHeaders(request);
+        }
+
         PrintWriter out = null;
 
         try {
@@ -199,6 +204,7 @@ public class McaController {
                 String defaultGroupName = request.getHeader("Moteve-DefaultGroup");
                 String mediaFormat = request.getHeader("Moteve-MediaFormat");
                 try {
+                    logger.debug("invoking videoService.startRecording(" + user + ", " + mediaFormat + ", " + defaultGroupName + ")");
                     Video video = videoService.startRecording(user, mediaFormat, defaultGroupName);
                     logger.info("Started a new video, id=" + video.getId() + ", author=" + video.getAuthor().getEmail());
                     response.setHeader("Moteve-Sequence", String.valueOf(video.getId()));
@@ -265,5 +271,12 @@ public class McaController {
             return null;
         }
         return user;
+    }
+
+    private void printHeaders(HttpServletRequest request) {
+        for (Enumeration headerNames = request.getHeaderNames(); headerNames.hasMoreElements();) {
+            String headerName = (String) headerNames.nextElement();
+            logger.debug("Request header '" + headerName + "'='" + request.getHeader(headerName) + "'");
+        }
     }
 }

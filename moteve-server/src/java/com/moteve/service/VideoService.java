@@ -111,7 +111,6 @@ public class VideoService {
      * @return the new Video
      * @throws UnknownMediaFormatException when the mediaFormat is not registered in DB
      */
-    @Transactional
     public Video startRecording(User author, String mediaFormatName, String allowedGroupName)
             throws UnknownMediaFormatException {
         // check for media format; must already exist
@@ -119,7 +118,11 @@ public class VideoService {
         try {
             mediaFormat = mediaFormatDao.findByName(mediaFormatName);
         } catch (NoResultException e) {
-            throw new UnknownMediaFormatException("The media format '" + mediaFormatName + "' is not recognized");
+//            throw new UnknownMediaFormatException("The media format '" + mediaFormatName + "' is not recognized");
+            logger.info("Creating a new media format: " + mediaFormatName);
+            mediaFormat = new MediaFormat();
+            mediaFormat.setName(mediaFormatName);
+            mediaFormat = mediaFormatDao.store(mediaFormat);
         }
 
         // check the group existence

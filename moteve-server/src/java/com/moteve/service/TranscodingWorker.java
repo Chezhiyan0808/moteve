@@ -58,11 +58,12 @@ class TranscodingWorker implements Runnable {
             }
 
             if (stdInput.length() > 0) {
-                logger.debug("Transcoder output: " + stdInput.toString());
+                logger.debug("Transcoder std output: " + stdInput.toString());
             }
 
             if (stdError.length() > 0) {
-                logger.error("Transcoder error: " + stdError.toString());
+                // ffmpeg logs everything to err output
+                logger.debug("Transcoder err output: " + stdError.toString());
             }
         } catch (Exception e) {
             success = false;
