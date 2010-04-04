@@ -53,7 +53,7 @@ public class GroupController {
     public ModelAndView displayGroups(HttpServletRequest request) {
         Set<Group> groups = new HashSet<Group>(userService.getGroups(request.getRemoteUser()));
         // don't display the PUBLIC group
-        for (Iterator<Group> i = groups.iterator(); i.hasNext(); ) {
+        for (Iterator<Group> i = groups.iterator(); i.hasNext();) {
             Group group = i.next();
             if (Group.PUBLIC.equals(group.getName())) {
                 i.remove();
@@ -84,7 +84,7 @@ public class GroupController {
 
     @RequestMapping(value = "/group/manageGroupMembers.htm", method = RequestMethod.GET)
     public ModelAndView setMembersForm(HttpServletRequest request,
-            @RequestParam(value="groupId") Long groupId) {
+            @RequestParam(value = "groupId") Long groupId) {
         Map<String, Object> model = new HashMap<String, Object>();
         Group group = userService.getGroup(groupId);
         model.put("group", group);
@@ -98,7 +98,7 @@ public class GroupController {
     @RequestMapping(value = "/group/setGroupMembers.htm", method = RequestMethod.POST)
     public String setGroupMembers(HttpServletRequest request,
             @ModelAttribute("group") Group group,
-            @RequestParam(value="groupMembers", required=false) List<Long> groupMembers) {
+            @RequestParam(value = "groupMembers", required = false) List<Long> groupMembers) {
         if (groupMembers == null) {
             groupMembers = new ArrayList<Long>();
         }

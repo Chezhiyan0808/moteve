@@ -62,7 +62,7 @@
                 </tr>
                 <c:forEach var="video" items="${requestScope.videos}">
                     <tr>
-                        <td><a href="watchVideo?id=${video.id}">${video.id}</a></td>
+                        <td><a href="watchVideo.htm?id=${video.id}">${video.id}</a></td>
                         <td>${video.name}</td>
                         <td>${video.author.email}</td>
                         <td><fmt:formatDate value="${video.creationDate}" pattern="yyyy-MM-dd hh:mm:ss" /></td>

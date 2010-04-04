@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.domain;
 
 import java.io.Serializable;
@@ -37,13 +36,13 @@ import javax.persistence.Table;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(name="mt_role")
+@Table(name = "mt_role")
 //@DiscriminatorColumn(name="role_type")
 public abstract class Role implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name="id")
+    @Column(name = "id")
     private Long id;
 
     public Long getId() {

@@ -47,7 +47,7 @@ public class SystemInitializer {
 
     @Autowired
     private TranscodingService transcodingService;
-    
+
     private static final Logger logger = Logger.getLogger(SystemInitializer.class);
 
     @PostConstruct

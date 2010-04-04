@@ -38,6 +38,7 @@ import org.springframework.web.servlet.ModelAndView;
 public class ContactController {
 
     private static final Logger logger = Logger.getLogger(ContactController.class);
+
     @Autowired
     private UserService userService;
 

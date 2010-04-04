@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.domain;
 
 import java.io.Serializable;
@@ -37,7 +36,8 @@ import javax.persistence.UniqueConstraint;
  * @author Radek Skokan
  */
 @Entity
-@Table(name = "device", uniqueConstraints=@UniqueConstraint(columnNames={"token"}))
+@Table(name = "device", uniqueConstraints =
+@UniqueConstraint(columnNames = {"token"}))
 public class Device implements Serializable {
 
     @Id
@@ -45,24 +45,24 @@ public class Device implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name="description")
+    @Column(name = "description")
     private String description;
 
     /**
      * Security token used for communication with MCAs.
      * The token must be unique so it is possible to identify the device and user.
      */
-    @Column(name="token", unique=true, nullable=false)
+    @Column(name = "token", unique = true, nullable = false)
     private String token;
 
-    @Column(name="auth_date", nullable=false)
+    @Column(name = "auth_date", nullable = false)
     @Temporal(TemporalType.DATE)
     Date authDate;
 
     /**
      * The user that the device is associated to
      */
-    @ManyToOne(optional=false)
+    @ManyToOne(optional = false)
     private User user;
 
     public Date getAuthDate() {
@@ -109,5 +109,4 @@ public class Device implements Serializable {
     public String toString() {
         return "(Device ID=" + id + ", description=" + description + ")";
     }
-
 }

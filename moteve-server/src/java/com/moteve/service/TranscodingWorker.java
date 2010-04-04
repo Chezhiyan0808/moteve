@@ -67,8 +67,8 @@ class TranscodingWorker implements Runnable {
             }
         } catch (Exception e) {
             success = false;
-            logger.error("Error while converting video part ID=" + part.getId() + ", src=" + 
-                    part.getSourceLocation() + ": " + e.getMessage(), e);
+            logger.error("Error while converting video part ID=" + part.getId() + ", src="
+                    + part.getSourceLocation() + ": " + e.getMessage(), e);
         } finally {
             transcodingService.transcodingFinished(part, success);
         }

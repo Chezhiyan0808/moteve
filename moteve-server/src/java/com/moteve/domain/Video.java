@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.domain;
 
 import java.io.Serializable;
@@ -39,7 +38,7 @@ import javax.persistence.TemporalType;
  * @author Radek Skokan
  */
 @Entity
-@Table(name="video")
+@Table(name = "video")
 public class Video implements Serializable {
 
     @Id
@@ -47,30 +46,31 @@ public class Video implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name="name")
+    @Column(name = "name")
     private String name;
 
-    @Column(name="permanent")
+    @Column(name = "permanent")
     private boolean permanent;
 
-    @Column(name="creation_date")
+    @Column(name = "creation_date")
     @Temporal(TemporalType.DATE)
     private Date creationDate;
 
-    @Column(name="record_in_progress")
+    @Column(name = "record_in_progress")
     private boolean recordInProgress;
 
-    @OneToMany(mappedBy="video")
+    @OneToMany(mappedBy = "video")
     private Set<VideoPart> parts;
 
-    @ManyToOne(optional=false)
+    @ManyToOne(optional = false)
     private User author;
 
     @ManyToMany
-    @JoinTable(
-        name="video_permission",
-        joinColumns=@JoinColumn(name="video_id", referencedColumnName="id"),
-        inverseJoinColumns=@JoinColumn(name="role_id", referencedColumnName="id"))
+    @JoinTable(name = "video_permission",
+    joinColumns =
+    @JoinColumn(name = "video_id", referencedColumnName = "id"),
+    inverseJoinColumns =
+    @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<Role> permissions;
 
     @ManyToOne
@@ -88,14 +88,14 @@ public class Video implements Serializable {
      * The video remove functionality is executed by Admin on videos
      * marked for removal.
      */
-    @Column(name="removed")
+    @Column(name = "removed")
     private boolean removed;
 
     /**
      * Indicates whether the video files and VideParts were marked as deleted by the
      * video author, i.e. to be deleted by Admin.
      */
-    @Column(name="marked_for_removal")
+    @Column(name = "marked_for_removal")
     private boolean markedForRemoval;
 
     public User getAuthor() {

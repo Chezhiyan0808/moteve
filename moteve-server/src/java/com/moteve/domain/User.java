@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.domain;
 
 import java.io.Serializable;
@@ -34,49 +33,51 @@ import javax.persistence.TemporalType;
  * @author Radek Skokan
  */
 @Entity
-@Table(name="mt_user")
+@Table(name = "mt_user")
 public class User extends Role implements Serializable {
 
-    @Column(name="email", unique = true, nullable=false)
+    @Column(name = "email", unique = true, nullable = false)
     private String email; // also used as login name
 
-    @Column(name="password")
+    @Column(name = "password")
     private String password;
 
-    @Column(name="display_name")
+    @Column(name = "display_name")
     private String displayName;
 
     /*
      * User's contact list. Can only be users.
      */
     @ManyToMany
-    @JoinTable(
-        name="user_contact",
-        joinColumns=@JoinColumn(name="user_id", referencedColumnName="id"),
-        inverseJoinColumns=@JoinColumn(name="contact_id", referencedColumnName="id"))
+    @JoinTable(name = "user_contact",
+    joinColumns =
+    @JoinColumn(name = "user_id", referencedColumnName = "id"),
+    inverseJoinColumns =
+    @JoinColumn(name = "contact_id", referencedColumnName = "id"))
     Set<User> contacts;
 
-    @OneToMany(mappedBy="user")
+    @OneToMany(mappedBy = "user")
     Set<Group> groups;
 
-    @Column(name="registration_date", nullable=false)
+    @Column(name = "registration_date", nullable = false)
     @Temporal(TemporalType.DATE)
     Date registrationDate;
-    
-    @Column(name="enabled", nullable=false)
+
+    @Column(name = "enabled", nullable = false)
     boolean enabled;
 
     @ManyToMany
-    @JoinTable(
-        name="user_authority",
-        joinColumns=@JoinColumn(name="user_id", referencedColumnName="id"),
-        inverseJoinColumns=@JoinColumn(name="authority_id", referencedColumnName="id"))
+    @JoinTable(name = "user_authority",
+    joinColumns =
+    @JoinColumn(name = "user_id", referencedColumnName = "id"),
+    inverseJoinColumns =
+    @JoinColumn(name = "authority_id", referencedColumnName = "id"))
     Set<Authority> authorities;
 
     /**
      * Mobile devices that the user has authenticated
      */
-    @OneToMany(mappedBy="user")
+    @OneToMany(mappedBy = "user")
     private Set<Device> devices;
 
     public Set<User> getContacts() {
@@ -155,5 +156,4 @@ public class User extends Role implements Serializable {
     public String toString() {
         return "(User ID=" + getId() + ", email=" + email + ")";
     }
-
 }

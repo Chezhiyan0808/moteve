@@ -74,5 +74,4 @@ public class MediaFormat implements Serializable {
     public String toString() {
         return "(MediaFormat ID=" + id + ", name=" + name + ")";
     }
-
 }

@@ -436,4 +436,18 @@ public class VideoService {
             logger.error("Error marking video for removal", e);
         }
     }
+
+    /**
+     * Returns the successor of a video part.
+     * @param partId identifies the current video part, which successor will be returned
+     * @return the next video part; null if this is the last one
+     */
+    public VideoPart getNextVideoPart(Long partId) {
+        try {
+            VideoPart currPart = videoPartDao.findById(partId);
+            return currPart.getNextPart();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
 }

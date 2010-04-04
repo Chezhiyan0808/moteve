@@ -68,8 +68,8 @@ public class VideoDao {
     public List<Video> findRecentPublic(int count) {
         logger.debug("Getting recent " + count + " videos accessible for ANONYMOUS");
         Query query = entityManager.createQuery("SELECT DISTINCT v FROM Video v, IN (v.permissions) p "
-                + "WHERE p.name = '" + Group.PUBLIC + "' " +
-                "AND v.markedForRemoval <> TRUE AND v.removed <> TRUE ORDER BY v.creationDate DESC");
+                + "WHERE p.name = '" + Group.PUBLIC + "' "
+                + "AND v.markedForRemoval <> TRUE AND v.removed <> TRUE ORDER BY v.creationDate DESC");
         query.setMaxResults(count);
         return query.getResultList();
     }
@@ -94,8 +94,8 @@ public class VideoDao {
     public List<Video> findRecent(int count, String email) {
         logger.debug("Getting recent " + count + " videos accessible for " + email);
         String queryString = "SELECT DISTINCT v FROM Video v, IN (v.permissions) p "
-                + "WHERE " + buildVideoRestrictionClause(email) + " " +
-                "AND v.markedForRemoval <> TRUE AND v.removed <> TRUE ORDER BY v.creationDate DESC";
+                + "WHERE " + buildVideoRestrictionClause(email) + " "
+                + "AND v.markedForRemoval <> TRUE AND v.removed <> TRUE ORDER BY v.creationDate DESC";
         logger.debug("findRecent(" + count + ", " + email + ") query: " + queryString);
         Query query = entityManager.createQuery(queryString);
         query.setMaxResults(count);
@@ -114,7 +114,7 @@ public class VideoDao {
         if (email == null) {
             clause = "(p.name = '" + Group.PUBLIC + "') ";
         } else {
-            
+
             String userGroups = findGroupsForUser(email);
             if (userGroups == null || userGroups.length() == 0) {
                 clause = "(p.name = '" + Group.PUBLIC + "' "
@@ -199,8 +199,8 @@ public class VideoDao {
         StringBuilder queryString = new StringBuilder();
 
         // build the criteria-part query
-        queryString.append("SELECT DISTINCT v FROM Video v, IN (v.permissions) p " +
-                "WHERE v.markedForRemoval <> TRUE AND v.removed <> TRUE AND ");
+        queryString.append("SELECT DISTINCT v FROM Video v, IN (v.permissions) p "
+                + "WHERE v.markedForRemoval <> TRUE AND v.removed <> TRUE AND ");
         if (criteria.getAuthorEmail() != null && criteria.getAuthorEmail().length() > 0) {
             queryString.append("v.author.email = '" + criteria.getAuthorEmail() + "' AND ");
         } else if (criteria.getAuthorPattern() != null && criteria.getAuthorPattern().length() > 0) {
@@ -243,12 +243,12 @@ public class VideoDao {
      * @param videoId identifies the video
      * @return
      */
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<User> findAvailableVideoContacts(String email, Long videoId) {
-        Query query = entityManager.createQuery("SELECT c FROM User u, IN (u.contacts) c " +
-                "WHERE u.email = :email AND NOT EXISTS " +
-                "(SELECT p FROM Video v, IN (v.permissions) p WHERE v.id = :videoId AND c.id = p.id)");
+        Query query = entityManager.createQuery("SELECT c FROM User u, IN (u.contacts) c "
+                + "WHERE u.email = :email AND NOT EXISTS "
+                + "(SELECT p FROM Video v, IN (v.permissions) p WHERE v.id = :videoId AND c.id = p.id)");
         query.setParameter("email", email);
         query.setParameter("videoId", videoId);
         return query.getResultList();
@@ -259,11 +259,11 @@ public class VideoDao {
      * @param videoId
      * @return
      */
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<User> findVideoContacts(Long videoId) {
-        Query query = entityManager.createQuery("SELECT p FROM Video v, IN (v.permissions) p " +
-                "WHERE v.id = :videoId AND p.email IS NOT NULL");
+        Query query = entityManager.createQuery("SELECT p FROM Video v, IN (v.permissions) p "
+                + "WHERE v.id = :videoId AND p.email IS NOT NULL");
         query.setParameter("videoId", videoId);
         return query.getResultList();
     }
@@ -275,12 +275,12 @@ public class VideoDao {
      * @param videoId identifies the video
      * @return
      */
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Group> findAvailableVideoGroups(String email, Long videoId) {
-        Query query = entityManager.createQuery("SELECT g FROM User u, IN (u.groups) g " +
-                "WHERE u.email = :email AND NOT EXISTS " +
-                "(SELECT p FROM Video v, IN (v.permissions) p WHERE v.id = :videoId AND g.id = p.id)");
+        Query query = entityManager.createQuery("SELECT g FROM User u, IN (u.groups) g "
+                + "WHERE u.email = :email AND NOT EXISTS "
+                + "(SELECT p FROM Video v, IN (v.permissions) p WHERE v.id = :videoId AND g.id = p.id)");
         query.setParameter("email", email);
         query.setParameter("videoId", videoId);
         return query.getResultList();
@@ -291,12 +291,11 @@ public class VideoDao {
      * @param videoId
      * @return
      */
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Group> findVideoGroups(Long videoId) {
         Query query = entityManager.createQuery("SELECT p FROM Video v, IN (v.permissions) p WHERE v.id = :videoId AND p.email IS NULL");
         query.setParameter("videoId", videoId);
         return query.getResultList();
     }
-
 }

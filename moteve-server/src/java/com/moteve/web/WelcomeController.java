@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.web;
 
 import java.util.Date;
@@ -29,13 +28,12 @@ import org.springframework.web.servlet.ModelAndView;
  * @author Radek Skokan
  */
 @Controller
-@RequestMapping(value="/index.htm")
+@RequestMapping(value = "/index.htm")
 public class WelcomeController {
 
-    @RequestMapping(method=RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     public ModelAndView handleRequest(HttpServletRequest hsr, HttpServletResponse hsr1) throws Exception {
         Date today = new Date();
         return new ModelAndView("index", "today", today);
     }
-
 }

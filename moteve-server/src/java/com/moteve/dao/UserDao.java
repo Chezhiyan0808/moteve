@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.dao;
 
 import com.moteve.domain.Authority;
@@ -58,35 +57,35 @@ public class UserDao {
         return query.getResultList();
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public User findByEmail(String email) {
         Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email");
         query.setParameter("email", email);
-        return  (User) query.getSingleResult();
+        return (User) query.getSingleResult();
     }
 
     /**
      *
      * @return all users that have the <code>Authority.ADMIN</code> security authority
      */
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<User> findAdmins() {
-        Query query = entityManager.createQuery("SELECT u FROM User u JOIN u.authorities a " +
-                "WHERE a.name = :admin_auth");
+        Query query = entityManager.createQuery("SELECT u FROM User u JOIN u.authorities a "
+                + "WHERE a.name = :admin_auth");
         query.setParameter("admin_auth", Authority.ADMIN);
         return query.getResultList();
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public User findByEmailAndPassword(String email, String encPassword) {
         Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email AND password = :password");
         query.setParameter("email", email);
         query.setParameter("password", encPassword);
-        return  (User) query.getSingleResult();
+        return (User) query.getSingleResult();
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<User> findByEmailOrDisplayName(String criteria) {
         Query query = entityManager.createQuery("SELECT u FROM User u WHERE UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria");
@@ -100,14 +99,14 @@ public class UserDao {
      * @param excludeEmail if not null, user with the specified email address is excluded from the results
      * @return
      */
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<User> findEnabledByEmailOrDisplayName(String criteria, String excludeEmail) {
-        final String queryStringAll = "SELECT u FROM User u WHERE (u.enabled = TRUE) " +
-                "AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria)";
-        final String queryStringExclude = "SELECT u FROM User u WHERE (u.enabled = TRUE) " +
-                "AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria) " +
-                "AND (u.email <> :excludeEmail)";
+        final String queryStringAll = "SELECT u FROM User u WHERE (u.enabled = TRUE) "
+                + "AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria)";
+        final String queryStringExclude = "SELECT u FROM User u WHERE (u.enabled = TRUE) "
+                + "AND (UPPER(u.email) LIKE :criteria OR UPPER(u.displayName) LIKE :criteria) "
+                + "AND (u.email <> :excludeEmail)";
         Query query;
         if (excludeEmail == null) {
             query = entityManager.createQuery(queryStringAll);
@@ -126,12 +125,12 @@ public class UserDao {
      * @param groupId identifies the group
      * @return
      */
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<User> findAvailableGroupContacts(String email, Long groupId) {
-        Query query = entityManager.createQuery("SELECT c FROM User u, IN (u.contacts) c " +
-                "WHERE u.email = :email AND NOT EXISTS " +
-                "(SELECT m FROM Group g, IN (g.members) m WHERE g.id = :groupId AND c.id = m.id)");
+        Query query = entityManager.createQuery("SELECT c FROM User u, IN (u.contacts) c "
+                + "WHERE u.email = :email AND NOT EXISTS "
+                + "(SELECT m FROM Group g, IN (g.members) m WHERE g.id = :groupId AND c.id = m.id)");
         query.setParameter("email", email);
         query.setParameter("groupId", groupId);
         return query.getResultList();
@@ -142,7 +141,7 @@ public class UserDao {
      * @param groupId
      * @return
      */
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<User> findGroupContacts(Long groupId) {
         //Query query = entityManager.createQuery("SELECT m FROM User u, IN (u.groups) g, IN (g.members) m WHERE u.email = :email AND g.id = :groupId");

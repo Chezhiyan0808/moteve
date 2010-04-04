@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.dao;
 
 import com.moteve.domain.VideoPart;
@@ -64,10 +63,10 @@ public class VideoPartDao {
      */
     @Transactional(readOnly = true)
     public VideoPart findNextForTranscoding() {
-        Query query = entityManager.createQuery("SELECT vp FROM VideoPart vp " +
-                "WHERE vp.conversionStart IS NULL AND vp.conversionEnd IS NULL " +
-                "AND vp.transcodingFailed <> TRUE " +
-                "ORDER BY vp.captureTime DESC");
+        Query query = entityManager.createQuery("SELECT vp FROM VideoPart vp "
+                + "WHERE vp.conversionStart IS NULL AND vp.conversionEnd IS NULL "
+                + "AND vp.transcodingFailed <> TRUE "
+                + "ORDER BY vp.captureTime DESC");
         query.setMaxResults(1);
         return (VideoPart) query.getSingleResult();
     }

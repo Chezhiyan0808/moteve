@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.web;
 
 import com.moteve.domain.User;
@@ -42,18 +41,17 @@ public class RegistrationController {
 //    @Autowired
 //    public RegistrationController(UserService userService, UserValidator validator) {
 //    }
-
     @Autowired
     private UserService userService;
 
-    @RequestMapping(value="/register.htm", method=RequestMethod.GET)
+    @RequestMapping(value = "/register.htm", method = RequestMethod.GET)
     public String setupForm(ModelMap model) {
         User user = new User();
         model.addAttribute("user", user);
         return "user/registrationForm";
     }
 
-    @RequestMapping(value="/register.htm", method=RequestMethod.POST)
+    @RequestMapping(value = "/register.htm", method = RequestMethod.POST)
     public String processSubmit(@ModelAttribute("user") User user, BindingResult result, SessionStatus status) {
         //TODO: validator.validate(user, result);
         // if (result.hasErrors()) { ...
@@ -64,9 +62,8 @@ public class RegistrationController {
         return "redirect:registrationSuccess.htm";
     }
 
-    @RequestMapping(value="/registrationSuccess.htm", method=RequestMethod.GET)
+    @RequestMapping(value = "/registrationSuccess.htm", method = RequestMethod.GET)
     public String registrationSuccess() {
         return "user/registrationSuccess";
     }
-
 }

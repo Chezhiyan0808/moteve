@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.dao;
 
 import com.moteve.domain.Authority;
@@ -57,10 +56,10 @@ public class AuthorityDao {
         return query.getResultList();
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public Authority findByName(String name) {
         Query query = entityManager.createQuery("SELECT a FROM Authority a WHERE a.name = :name");
         query.setParameter("name", name);
-        return  (Authority) query.getSingleResult();
+        return (Authority) query.getSingleResult();
     }
 }

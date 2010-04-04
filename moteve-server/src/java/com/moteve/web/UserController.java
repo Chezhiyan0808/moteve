@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.web;
 
 import com.moteve.service.UserService;
@@ -29,7 +28,4 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
-    
-
 }

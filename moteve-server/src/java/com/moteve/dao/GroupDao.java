@@ -65,8 +65,8 @@ public class GroupDao {
      */
     @Transactional(readOnly = true)
     public Group findByUserAndName(Long userId, String groupName) {
-        Query query = entityManager.createQuery("SELECT g FROM Group g, IN (g.user) u " +
-                "WHERE u.id = :userId AND g.name = :groupName");
+        Query query = entityManager.createQuery("SELECT g FROM Group g, IN (g.user) u "
+                + "WHERE u.id = :userId AND g.name = :groupName");
         query.setParameter("userId", userId);
         query.setParameter("groupName", groupName);
         return (Group) query.getSingleResult();

@@ -15,20 +15,21 @@
  */
 package com.moteve.web;
 
-import com.moteve.domain.Group;
-import com.moteve.domain.User;
 import com.moteve.domain.Video;
-import com.moteve.domain.VideoPermissionsException;
+import com.moteve.domain.VideoPart;
 import com.moteve.domain.VideoSearchCriteria;
 import com.moteve.service.VideoService;
-import java.text.DateFormat;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.ManagedMap;
@@ -119,16 +120,16 @@ public class VideoController {
         model.put("videoGroups", videoService.getVideoGroups(email, videoId));
         model.put("availableContacts", videoService.getAvailableContacts(email, videoId));
         model.put("videoContacts", videoService.getVideoContacts(email, videoId));
-        
+
         return new ModelAndView("video/editVideo", model);
     }
 
     @RequestMapping(value = "/video/updateVideoSettings.htm", method = RequestMethod.POST)
     public String setVideoSettings(HttpServletRequest request,
-            @RequestParam(value="id", required=false) Long videoId,
-            @RequestParam(value="videoName", required=false) String videoName,
-            @RequestParam(value="videoContacts", required=false) List<Long> videoContactIds,
-            @RequestParam(value="videoGroups", required=false) List<Long> videoGroupIds) {
+            @RequestParam(value = "id", required = false) Long videoId,
+            @RequestParam(value = "videoName", required = false) String videoName,
+            @RequestParam(value = "videoContacts", required = false) List<Long> videoContactIds,
+            @RequestParam(value = "videoGroups", required = false) List<Long> videoGroupIds) {
         videoService.updateVideo(request.getRemoteUser(), videoId, videoName, videoContactIds, videoGroupIds);
         return "redirect:/video/listVideos.htm";
     }
@@ -138,5 +139,104 @@ public class VideoController {
             @RequestParam("id") Long videoId) {
         videoService.markForRemoval(request.getRemoteUser(), videoId);
         return "redirect:/video/listVideos.htm";
+    }
+
+    @RequestMapping(value = "/video/watchVideo.htm", method = RequestMethod.GET)
+    public ModelAndView watchVideo(HttpServletRequest request,
+            @RequestParam("id") Long videoId) {
+        Video video = videoService.getVideo(videoId);
+        if (video == null) {
+            logger.error("No video for id=" + videoId);
+            return new ModelAndView("redirect:/");
+        }
+        String email = request.getRemoteUser();
+
+        // TODO: check permissions
+
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("video", video);
+        model.put("email", email);
+        String streamUrl = request.getRequestURL().substring(0, request.getRequestURL().lastIndexOf("/") + 1) + "videoStream.htm?id=" + videoId;
+        model.put("streamUrl", streamUrl);
+        return new ModelAndView("video/watchVideo", model);
+    }
+
+    @RequestMapping(value = "/video/videoStream.htm", method = RequestMethod.GET)
+    public void streamVideo(HttpServletRequest request, HttpServletResponse resp,
+            @RequestParam("id") Long videoId) {
+        logger.debug("Request to stream videoId=" + videoId);
+        Video video = videoService.getVideo(videoId);
+        if (video == null) {
+            logger.error("No video for id=" + videoId);
+            return;
+        }
+
+        // TODO: persmission check
+
+        VideoPart part;
+        Long playerPartId = (Long) request.getSession().getAttribute("playerPartId");
+        logger.debug("session playerPartId=" + playerPartId);
+        if (playerPartId == null) {
+            // start with the first video part
+            part = video.getFirstPart();
+        } else {
+            part = videoService.getNextVideoPart(playerPartId);
+        }
+
+        if (part == null || part.getTargetLocation() == null) {
+            // no next part or the part is not transcoded yet
+            logger.debug("No next video part orthe part is not transcoded yet");
+            request.getSession().removeAttribute("playerPartId");
+            return;
+        } else {
+            playerPartId = part.getId();
+            request.getSession().setAttribute("playerPartId", playerPartId);
+        }
+        logger.debug("playerPartId=" + playerPartId);
+
+        // stream the file
+        String filePath = null;
+        DataOutputStream dos = null;
+        FileInputStream fis = null;
+        try {
+            resp.setContentType("video/x-flv");
+            resp.addHeader("Cache-Control", "no-cache");
+            resp.addHeader("Pragma", "no-cache");
+            dos = new DataOutputStream(resp.getOutputStream());
+            filePath = part.getTargetLocation();
+            File f = new File(filePath);
+            long totalSize = 0;
+            if (f.exists()) {
+                logger.debug("Streaming videoId=" + videoId + ", playerPartId=" + playerPartId + ", file=" + filePath);
+                resp.setContentLength((int) f.length());
+                fis = new FileInputStream(filePath);
+                byte[] buffer = new byte[resp.getBufferSize()];
+                int bytesRead;
+
+                while ((bytesRead = fis.read(buffer)) != -1) {
+                    totalSize += bytesRead;
+                    dos.write(buffer, 0, bytesRead);
+                }
+
+            } else {
+                logger.debug("Finished streaming of videoId=" + videoId + ", playerPartId=" + playerPartId + ", file=" + filePath + "; " + totalSize + " bytes");
+            }
+
+        } catch (IOException e) {
+            logger.error("Error streaming videoId=" + videoId + ", playerPartId=" + playerPartId + ", file=" + filePath + ": " + e.getMessage(), e);
+        } finally {
+            try {
+                if (dos != null) {
+                    dos.flush();
+                    dos.close();
+                }
+                if (fis != null) {
+                    fis.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        return;
     }
 }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.domain;
 
 import java.io.Serializable;
@@ -30,18 +29,19 @@ import javax.persistence.Table;
  * @author Radek Skokan
  */
 @Entity
-@Table(name="authority")
+@Table(name = "authority")
 public class Authority implements Serializable {
 
     public static final String MEMBER = "ROLE_MEMBER";
+
     public static final String ADMIN = "ROLE_ADMIN";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name="id")
+    @Column(name = "id")
     private Long id;
 
-    @Column(name="name", unique=true, nullable=false)
+    @Column(name = "name", unique = true, nullable = false)
     private String name;
 
     public Long getId() {

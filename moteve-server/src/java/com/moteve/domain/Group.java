@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.moteve.domain;
 
 import java.io.Serializable;
@@ -33,25 +32,28 @@ import javax.persistence.UniqueConstraint;
  * @author Radek Skokan
  */
 @Entity
-@Table(name="mt_group", uniqueConstraints=@UniqueConstraint(columnNames={"name", "user_id"}))
+@Table(name = "mt_group", uniqueConstraints =
+@UniqueConstraint(columnNames = {"name", "user_id"}))
 public class Group extends Role implements Serializable {
 
     public static final String PUBLIC = "PUBLIC";
+
     public static final String JUST_ME = "JUST_ME";
 
-    @Column(name = "name", nullable=false) // not unique as many users can have the same name of their groups, which are globally different
+    @Column(name = "name", nullable = false) // not unique as many users can have the same name of their groups, which are globally different
     private String name;
 
     @ManyToMany
-    @JoinTable(
-        name="group_member",
-        joinColumns=@JoinColumn(name="group_id", referencedColumnName="id"),
-        inverseJoinColumns=@JoinColumn(name="member_id", referencedColumnName="id"))
+    @JoinTable(name = "group_member",
+    joinColumns =
+    @JoinColumn(name = "group_id", referencedColumnName = "id"),
+    inverseJoinColumns =
+    @JoinColumn(name = "member_id", referencedColumnName = "id"))
     private Set<Role> members;
 
-    @ManyToOne(optional=false)
+    @ManyToOne(optional = false)
     private User user;
-    
+
     public String getName() {
         return name;
     }
@@ -80,5 +82,4 @@ public class Group extends Role implements Serializable {
     public String toString() {
         return "(Group ID=" + getId() + ", name=" + name + ")";
     }
-
 }
