@@ -17,6 +17,7 @@ package com.moteve.service;
 
 import com.moteve.domain.VideoPart;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import org.apache.log4j.Logger;
 
@@ -39,19 +40,21 @@ class TranscodingWorker implements Runnable {
 
     public void run() {
         boolean success = true;
+        InputStreamReader stdInputReader = null;
+        InputStreamReader stdErrorReader = null;
         try {
             String command = transcodingService.getCommand(part);
             logger.info("Executing " + command);
             Process p = Runtime.getRuntime().exec(command);
             int c;
 
-            BufferedReader stdInputReader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            stdInputReader = new InputStreamReader(p.getInputStream());
             StringBuilder stdInput = new StringBuilder();
             while ((c = stdInputReader.read()) != -1) {
                 stdInput.append((char) c);
             }
 
-            BufferedReader stdErrorReader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+            stdErrorReader = new InputStreamReader(p.getErrorStream());
             StringBuilder stdError = new StringBuilder();
             while ((c = stdErrorReader.read()) != -1) {
                 stdError.append((char) c);
@@ -70,6 +73,16 @@ class TranscodingWorker implements Runnable {
             logger.error("Error while converting video part ID=" + part.getId() + ", src="
                     + part.getSourceLocation() + ": " + e.getMessage(), e);
         } finally {
+            try {
+                if (stdInputReader != null) {
+                    stdInputReader.close();
+                }
+                if (stdErrorReader != null) {
+                    stdErrorReader.close();
+                }
+            } catch (IOException e) {
+                logger.error(e);
+            }
             transcodingService.transcodingFinished(part, success);
         }
     }
