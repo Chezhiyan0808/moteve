@@ -15,9 +15,9 @@
         <intercept-url pattern="/logout.jsp*" access="ROLE_MEMBER,ROLE_ADMIN" />
         <intercept-url pattern="/register.htm" access="ROLE_ANONYMOUS" />
         <intercept-url pattern="/registrationSuccess.htm" access="ROLE_ANONYMOUS" />
-        <intercept-url pattern="/index.htm*" access="ROLE_MEMBER,ROLE_ANONYMOUS,ROLE_ADMIN" />
-        <intercept-url pattern="/video/**" access="ROLE_MEMBER,ROLE_ANONYMOUS,ROLE_ADMIN" />
-        <intercept-url pattern="/flowplayer/**" access="ROLE_MEMBER,ROLE_ANONYMOUS,ROLE_ADMIN" />
+        <intercept-url pattern="/redirect.jsp*" access="ROLE_ANONYMOUS,ROLE_MEMBER,ROLE_ADMIN" />
+        <intercept-url pattern="/video/**" access="ROLE_ANONYMOUS,ROLE_MEMBER,ROLE_ADMIN" />
+        <intercept-url pattern="/flowplayer/**" access="ROLE_ANONYMOUS,ROLE_MEMBER,ROLE_ADMIN" />
         <intercept-url pattern="/**" access="ROLE_MEMBER,ROLE_ADMIN" />
     </http>
 
