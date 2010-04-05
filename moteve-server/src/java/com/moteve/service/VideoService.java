@@ -228,8 +228,6 @@ public class VideoService {
                 fos.write(buffer, 0, bytesRead);
             }
             logger.info("Bytes written: " + totalSize + ". Total file (" + f.getAbsolutePath() + ") size=" + f.length() + " bytes");
-
-            transcodingService.work();
         } catch (Exception e) {
             logger.error("Error adding video part", e);
             throw new MoteveException("Error adding video part: " + e.getMessage(), e);
@@ -243,6 +241,9 @@ public class VideoService {
                 }
             }
         }
+
+        // notify the transcoder to start after the media file has been closed and no error has occured
+        transcodingService.work();
     }
 
     private String prepareSrcVideoFilePath(VideoPart part) {
