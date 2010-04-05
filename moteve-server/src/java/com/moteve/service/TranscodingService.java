@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Required;
  *
  * To avoid the situation no transcoding process is running and there are 
  * video parts to be transcoded, call the work() method when a new video part
- * became available or when the application has been started.
+ * became available or when the application has been started. ... or regularly better
  *
  * @author Radek Skokan
  */
@@ -72,7 +72,6 @@ public class TranscodingService {
      */
     public void work() {
         if (runningProcesses < maxProcesses) {
-            runningProcesses++;
             logger.debug("Transcode process capacity available; running " + runningProcesses + " process(es); max=" + maxProcesses);
             transcodeNextVideoPart();
         } else {
@@ -98,6 +97,7 @@ public class TranscodingService {
             logger.info("Starting transcoding of video part ID=" + part.getId() + ", src=" + part.getSourceLocation()
                     + " [running " + runningProcesses + " process(es); max=" + maxProcesses + "]");
             worker.start();
+            runningProcesses++;
         } catch (NoResultException e) {
             logger.debug("No video part is available for transcoding");
         }
@@ -117,6 +117,9 @@ public class TranscodingService {
                 logger.error("Transcoding of video part ID=" + part.getId() + ", src=" + part.getSourceLocation() + " failed");
                 part.setTranscodingFailed(true);
             }
+            runningProcesses--;
+            logger.debug("runningProcesses value decreased to " + runningProcesses);
+
             videoPartDao.store(part);
         } catch (Exception e) {
             // just in case, catch all possible issues
@@ -124,7 +127,6 @@ public class TranscodingService {
         }
 
         // try to transcode next available video parts
-        runningProcesses--;
         work();
     }
 

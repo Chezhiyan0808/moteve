@@ -158,6 +158,7 @@ public class VideoController {
         model.put("email", email);
         String streamUrl = request.getRequestURL().substring(0, request.getRequestURL().lastIndexOf("/") + 1) + "videoStream.htm?id=" + videoId;
         model.put("streamUrl", streamUrl);
+        request.getSession().removeAttribute("playerPartId");
         return new ModelAndView("video/watchVideo", model);
     }
 
@@ -217,8 +218,6 @@ public class VideoController {
                     totalSize += bytesRead;
                     dos.write(buffer, 0, bytesRead);
                 }
-
-            } else {
                 logger.debug("Finished streaming of videoId=" + videoId + ", playerPartId=" + playerPartId + ", file=" + filePath + "; " + totalSize + " bytes");
             }
 
@@ -234,6 +233,7 @@ public class VideoController {
                     fis.close();
                 }
             } catch (Exception e) {
+                logger.error(e);
             }
         }
 

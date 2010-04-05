@@ -25,7 +25,7 @@
         <property name="formatConvertors">
             <map>
                 <!-- use SOURCE and TARGET for the video files location; it will be replaced by the actual video -->
-                <entry key="3GPP-H.263-AMR_NB" value="/usr/local/bin/ffmpeg -i SOURCE -ar 8000 -b 260000 -s 320x240 TARGET" />
+                <entry key="3GPP-H.263-AMR_NB" value="/usr/local/bin/ffmpeg -i SOURCE -ar 11025 -b 260000 -s 320x240 TARGET" />
                 <!--<entry key="3GPP-H.263-AMR_NB" value="c:\\temp\\fakeTranscoder.bat SOURCE TARGET" />-->
             </map>
         </property>

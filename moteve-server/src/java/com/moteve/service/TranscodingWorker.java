@@ -43,18 +43,18 @@ class TranscodingWorker implements Runnable {
             String command = transcodingService.getCommand(part);
             logger.info("Executing " + command);
             Process p = Runtime.getRuntime().exec(command);
-            String line;
+            int c;
 
             BufferedReader stdInputReader = new BufferedReader(new InputStreamReader(p.getInputStream()));
             StringBuilder stdInput = new StringBuilder();
-            while ((line = stdInputReader.readLine()) != null) {
-                stdInput.append(line).append("\n");
+            while ((c = stdInputReader.read()) != -1) {
+                stdInput.append((char) c);
             }
 
             BufferedReader stdErrorReader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
             StringBuilder stdError = new StringBuilder();
-            while ((line = stdErrorReader.readLine()) != null) {
-                stdError.append(line).append("\n");
+            while ((c = stdErrorReader.read()) != -1) {
+                stdError.append((char) c);
             }
 
             if (stdInput.length() > 0) {
